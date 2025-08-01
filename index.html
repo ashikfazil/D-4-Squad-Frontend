@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Manager Pro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Portfolio Pro</span>
+                </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item active" data-view="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item" data-view="portfolio">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Portfolio</span>
+                </li>
+                <li class="nav-item" data-view="performance">
+                    <i class="fas fa-chart-area"></i>
+                    <span>Performance</span>
+                </li>
+                <li class="nav-item" data-view="add-asset">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add Asset</span>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-info">
+                        <span class="username">Martin Jones</span>
+                        <span class="user-role">Investor</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">Welcome back! Here's your portfolio overview</p>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search assets...">
+                    </div>
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <div class="view active" id="dashboard-view">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>$125,430.50</h3>
+                            <p>Total Portfolio Value</p>
+                            <span class="stat-change positive">+2.5%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-trending-up"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>+$3,245.20</h3>
+                            <p>Today's Gain/Loss</p>
+                            <span class="stat-change positive">+2.65%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>12</h3>
+                            <p>Total Assets</p>
+                            <span class="stat-change neutral">No change</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>18.5%</h3>
+                            <p>Annual Return</p>
+                            <span class="stat-change positive">+1.2%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="chart-container">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Portfolio Performance</h3>
+                                <div class="chart-controls">
+                                    <button class="btn-small active">1M</button>
+                                    <button class="btn-small">3M</button>
+                                    <button class="btn-small">1Y</button>
+                                    <button class="btn-small">ALL</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="performanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="allocation-container">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Asset Allocation</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="allocationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Recent Activity</h3>
+                            <button class="btn-link">View All</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="activity-list">
+                                <div class="activity-item">
+                                    <div class="activity-icon buy">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <p><strong>Bought AAPL</strong></p>
+                                        <span>10 shares at $150.25</span>
+                                    </div>
+                                    <div class="activity-time">2 hours ago</div>
+                                </div>
+                                
+                                <div class="activity-item">
+                                    <div class="activity-icon sell">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <p><strong>Sold TSLA</strong></p>
+                                        <span>5 shares at $245.80</span>
+                                    </div>
+                                    <div class="activity-time">1 day ago</div>
+                                </div>
+                                
+                                <div class="activity-item">
+                                    <div class="activity-icon dividend">
+                                        <i class="fas fa-coins"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <p><strong>Dividend Received</strong></p>
+                                        <span>MSFT - $45.20</span>
+                                    </div>
+                                    <div class="activity-time">3 days ago</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portfolio View -->
+            <div class="view" id="portfolio-view">
+                <div class="portfolio-header">
+                    <div class="portfolio-summary">
+                        <h2>My Portfolio</h2>
+                        <p>Manage your investment holdings</p>
+                    </div>
+                    <div class="portfolio-actions">
+                        <button class="btn-secondary">
+                            <i class="fas fa-download"></i>
+                            Export
+                        </button>
+                        <button class="btn-primary" onclick="showView('add-asset')">
+                            <i class="fas fa-plus"></i>
+                            Add Asset
+                        </button>
+                    </div>
+                </div>
+
+                <div class="portfolio-table-container">
+                    <table class="portfolio-table">
+                        <thead>
+                            <tr>
+                                <th>Asset</th>
+                                <th>Shares</th>
+                                <th>Price</th>
+                                <th>Market Value</th>
+                                <th>Gain/Loss</th>
+                                <th>Allocation</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="portfolio-table-body">
+                            <!-- Portfolio items will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Performance View -->
+            <div class="view" id="performance-view">
+                <div class="performance-header">
+                    <h2>Performance Analytics</h2>
+                    <p>Detailed analysis of your portfolio performance</p>
+                </div>
+
+                <div class="performance-metrics">
+                    <div class="metric-card">
+                        <h4>Total Return</h4>
+                        <div class="metric-value positive">+18.5%</div>
+                        <div class="metric-period">Since inception</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <h4>Annualized Return</h4>
+                        <div class="metric-value positive">+12.3%</div>
+                        <div class="metric-period">3 year average</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <h4>Volatility</h4>
+                        <div class="metric-value neutral">15.2%</div>
+                        <div class="metric-period">Standard deviation</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <h4>Sharpe Ratio</h4>
+                        <div class="metric-value positive">1.24</div>
+                        <div class="metric-period">Risk-adjusted return</div>
+                    </div>
+                </div>
+
+                <div class="performance-charts">
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h3>Historical Performance</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="historicalChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="card-header">
+                            <h3>Risk vs Return</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="riskReturnChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Asset View -->
+            <div class="view" id="add-asset-view">
+                <div class="add-asset-header">
+                    <h2>Add New Asset</h2>
+                    <p>Add a new investment to your portfolio</p>
+                </div>
+
+                <div class="add-asset-form">
+                    <div class="form-card">
+                        <form id="addAssetForm">
+                            <div class="form-group">
+                                <label for="assetSymbol">Asset Symbol</label>
+                                <input type="text" id="assetSymbol" placeholder="e.g., AAPL, TSLA, MSFT" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="assetName">Asset Name</label>
+                                <input type="text" id="assetName" placeholder="e.g., Apple Inc." required>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="shares">Number of Shares</label>
+                                    <input type="number" id="shares" placeholder="0" min="0" step="0.01" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="purchasePrice">Purchase Price</label>
+                                    <input type="number" id="purchasePrice" placeholder="$0.00" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="purchaseDate">Purchase Date</label>
+                                <input type="date" id="purchaseDate" required>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" class="btn-secondary" onclick="showView('portfolio')">Cancel</button>
+                                <button type="submit" class="btn-primary">Add Asset</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
