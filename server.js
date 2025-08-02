@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 async function getStockData(symbol) {
-  const API_KEY = 'ZjURUMRADMOyYeT0CpnWr3D0JkphYxdX';
+  const API_KEY = '';
   const url = `https://api.polygon.io/v2/aggs/ticker/${symbol.toUpperCase()}/prev?apiKey=${API_KEY}`;
   try {
     const response = await fetch(url);
