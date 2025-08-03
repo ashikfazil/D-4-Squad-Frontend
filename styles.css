@@ -232,6 +232,13 @@ body {
     gap: 1.5rem;
 }
 
+.chart-container {
+    max-width: 450px;
+    margin: auto;
+    height: 450px;
+    position: relative;
+}
+
 .portfolio-table-container { overflow-x: auto; }
 .portfolio-table {
     width: 100%;
@@ -342,6 +349,60 @@ body {
     gap: 1rem;
 }
 
+/* *** NEW: Styles for Performance Chart Section *** */
+.performance-card {
+    margin-bottom: 2rem;
+}
+
+.performance-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.performance-controls .form-group {
+    margin-bottom: 0;
+}
+
+.range-selector {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.range-selector .btn-secondary {
+    background-color: var(--bg-primary);
+}
+
+.range-selector .btn-secondary.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-dark);
+}
+
+.custom-date-range {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.custom-date-range .form-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+#getPerformanceBtn {
+    align-self: flex-start;
+}
+
+.performance-chart-container {
+    margin-top: 2rem;
+    height: 400px;
+    position: relative;
+}
+/* *** END OF NEW STYLES *** */
+
+
 @media screen and (max-width: 1200px) {
     .stats-grid { grid-template-columns: 1fr; }
 }
@@ -378,4 +439,90 @@ body {
         font-weight: 600;
         color: var(--text-secondary);
     }
+}
+/* Transaction History Table Styling */
+.transaction-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+  }
+  
+  .transaction-table th,
+  .transaction-table td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+  }
+  
+  .transaction-table thead {
+    background-color: var(--primary-color);
+    color: white;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+  }
+  
+  .transaction-table tbody tr:nth-child(even) {
+    background-color: var(--bg-secondary);
+  }
+  
+  .transaction-table tbody tr:hover {
+    background-color: var(--bg-primary);
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Transaction type coloring */
+  .transaction-type-buy {
+    color: var(--success-color);
+    font-weight: 600;
+  }
+  
+  .transaction-type-sell {
+    color: var(--danger-color);
+    font-weight: 600;
+  }
+  
+  /* Responsive adjustments */
+  @media screen and (max-width: 768px) {
+    .transaction-table thead {
+      display: none;
+    }
+  
+    .transaction-table, .transaction-table tbody, .transaction-table tr, .transaction-table td {
+      display: block;
+      width: 100%;
+    }
+  
+    .transaction-table tr {
+      margin-bottom: 1.25rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: var(--shadow-light);
+      padding: 1rem;
+    }
+  
+    .transaction-table td {
+      position: relative;
+      padding-left: 50%;
+      border: none;
+    }
+  
+    .transaction-table td::before {
+      position: absolute;
+      top: 0.75rem;
+      left: 1rem;
+      width: 45%;
+      white-space: nowrap;
+      font-weight: 600;
+      color: var(--text-secondary);
+      content: attr(data-label);
+    }
+  }
+  .form-error {
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    min-height: 1.2em; /* Prevents layout shift when message appears */
 }

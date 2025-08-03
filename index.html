@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -115,7 +114,44 @@
             </div>
 
             <div class="view" id="stocks-view">
+                <div class="card performance-card">
+                    <div class="card-header">
+                        <h3>Stock Performance</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="performance-controls">
+                            <div class="form-group">
+                                <label for="stockSymbolInput">Stock Symbol (e.g., AAPL, GOOG)</label>
+                                <input type="text" id="stockSymbolInput" placeholder="Enter Ticker">
+                            </div>
+                            <div class="range-selector">
+                                <button class="btn-secondary range-btn" data-range="7d">1W</button>
+                                <button class="btn-secondary range-btn active" data-range="30d">1M</button>
+                                <button class="btn-secondary range-btn" data-range="365d">1Y</button>
+                                <button class="btn-secondary range-btn" data-range="custom">Custom</button>
+                            </div>
+                            <div id="customDateRange" class="custom-date-range" style="display: none;">
+                                <div class="form-group">
+                                    <label for="startDateInput">Start Date</label>
+                                    <input type="date" id="startDateInput">
+                                </div>
+                                <div class="form-group">
+                                    <label for="endDateInput">End Date</label>
+                                    <input type="date" id="endDateInput">
+                                </div>
+                            </div>
+                            <button id="getPerformanceBtn" class="btn-primary">Get Performance</button>
+                        </div>
+                        <div class="performance-chart-container" style="display: none;">
+                            <canvas id="stockPerformanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="portfolio-table-container card">
+                    <div class="card-header">
+                        <h3>Your Stock Holdings</h3>
+                    </div>
                     <table class="portfolio-table">
                         <thead><tr><th>Asset</th><th>Shares</th><th>Price</th><th>Market Value</th><th>Gain/Loss</th><th>Actions</th></tr></thead>
                         <tbody id="stocks-table-body"></tbody>
@@ -125,6 +161,9 @@
 
             <div class="view" id="bonds-view">
                 <div class="portfolio-table-container card">
+                     <div class="card-header">
+                        <h3>Your Bond Holdings</h3>
+                    </div>
                     <table class="portfolio-table">
                         <thead><tr><th>Asset</th><th>Shares</th><th>Price</th><th>Market Value</th><th>Gain/Loss</th><th>Actions</th></tr></thead>
                         <tbody id="bonds-table-body"></tbody>
@@ -134,6 +173,9 @@
 
             <div class="view" id="commodities-view">
                 <div class="portfolio-table-container card">
+                     <div class="card-header">
+                        <h3>Your Commodity Holdings</h3>
+                    </div>
                     <table class="portfolio-table">
                         <thead><tr><th>Asset</th><th>Shares</th><th>Price</th><th>Market Value</th><th>Gain/Loss</th><th>Actions</th></tr></thead>
                         <tbody id="commodities-table-body"></tbody>
@@ -143,30 +185,69 @@
 
             <div class="view" id="history-view">
                 <div class="card">
-                    <div class="card-header"><h3>Transaction History</h3></div>
-                    <div class="card-body"><p>This feature is not yet implemented.</p></div>
+                  <div class="card-header">
+                    <h3>Transaction History</h3>
+                  </div>
+                  <div class="card-body">
+                    <div class="table-container">
+                      <table class="transaction-table">
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Date</th>
+                          </tr>
+                        </thead>
+                        <tbody id="transaction-table-body">
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
-            </div>
-
+              </div>
+              
             <div class="view" id="add-asset-view">
                 <div class="add-asset-form">
                     <div class="form-card card">
                         <form id="addAssetForm">
-                             <div class="form-group">
-                                <label for="assetName">Asset Name</label>
-                                <input type="text" id="assetName" placeholder="e.g., Apple Inc." required>
-                            </div>
                             <div class="form-group">
-                                <label for="assetSymbol">Asset Symbol</label>
-                                <input type="text" id="assetSymbol" placeholder="e.g., AAPL, TSLA" required>
+                                <label for="assetCategory">Category</label>
+                                <select id="assetCategory" required>
+                                    <option value="stocks">Stocks</option>
+                                    <option value="bonds">Bonds</option>
+                                    <option value="commodities">Commodities</option>
+                                </select>
                             </div>
+                            
+                            <div id="stock-bond-fields">
+                                <div class="form-group">
+                                    <label for="assetName">Asset Name</label>
+                                    <input type="text" id="assetName" placeholder="e.g., Apple Inc." required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="assetSymbol">Asset Symbol</label>
+                                    <input type="text" id="assetSymbol" placeholder="e.g., AAPL, BND" required>
+                                    <div class="form-error" id="assetSymbolError"></div>
+                                </div>
+                            </div>
+
+                            <div id="commodity-fields" style="display: none;">
+                                <div class="form-group">
+                                    <label for="commodityType">Commodity Type</label>
+                                    <select id="commodityType" required></select>
+                                </div>
+                            </div>
+
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label for="shares">Number of Shares</label>
+                                    <label for="shares">Quantity / Units</label>
                                     <input type="number" id="shares" placeholder="0" min="0" step="0.01" required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="purchasePrice">Purchase Price</label>
+                                    <label for="purchasePrice">Purchase Price (per Unit)</label>
                                     <input type="number" id="purchasePrice" placeholder="$0.00" min="0" step="0.01" required>
                                 </div>
                             </div>
@@ -174,14 +255,7 @@
                                 <div class="form-group">
                                     <label for="purchaseDate">Purchase Date</label>
                                     <input type="date" id="purchaseDate" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="assetCategory">Category</label>
-                                    <select id="assetCategory" required>
-                                        <option value="stocks">Stocks</option>
-                                        <option value="bonds">Bonds</option>
-                                        <option value="commodities">Commodities</option>
-                                    </select>
+                                    <div class="form-error" id="purchaseDateError"></div>
                                 </div>
                             </div>
                             <div class="form-actions">
@@ -239,6 +313,12 @@
         </div>
     </div>
 
+    <!-- Chart.js and necessary adapters -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    
+    <!-- Your application script -->
     <script src="script.js"></script>
 </body>
 </html>
