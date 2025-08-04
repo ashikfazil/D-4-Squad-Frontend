@@ -305,6 +305,31 @@ body {
     gap: 1rem;
 }
 
+/* New Form Fieldset Styles */
+.form-fieldset {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem 1.5rem 1rem;
+    margin-bottom: 2rem;
+    background-color: var(--bg-primary);
+    position: relative;
+}
+
+.form-fieldset .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-legend {
+    font-weight: 600;
+    color: var(--primary-dark);
+    padding: 0 0.5rem;
+    margin-left: 1rem;
+    font-size: 1rem;
+    background-color: var(--bg-primary);
+    position: absolute;
+    top: -0.7em;
+}
+
 .modal-overlay {
     position: fixed;
     top: 0;
