@@ -65,7 +65,7 @@ app.get('/api/historical-data/:symbol', async (req, res) => {
 
     try {
         const result = await yahooFinance.historical(symbol.toUpperCase(), { period1: startDate, period2: endDate, interval: '1d' });
-        const formattedData = result.map(item => ({ x: item.date, y: item.close.toFixed(2) }));
+        const formattedData = result.map(item => ({ x: item.date.getTime(), y: parseFloat(item.close.toFixed(2)) }));
         res.status(200).json(formattedData);
     } catch (error) {
         res.status(404).json({ error: `Could not find historical data for "${symbol}".` });
@@ -73,7 +73,7 @@ app.get('/api/historical-data/:symbol', async (req, res) => {
 });
 
 
-// --- DATABASE OPERATIONS (No changes from here down) ---
+// --- DATABASE OPERATIONS ---
 
 app.get('/api/assets', async (req, res) => {
     try {
@@ -108,19 +108,21 @@ app.put('/api/update-asset/:id', async (req, res) => {
 
 app.delete('/api/delete-asset/:id', async (req, res) => {
     const assetId = req.params.id;
-    const { volumeSold } = req.body;
-    if (!volumeSold || volumeSold <= 0) {
-        return res.status(400).json({ error: 'Valid volume to sell must be provided.' });
+    const { volumeSold, salePrice } = req.body; // Expect salePrice from the client
+    if (!volumeSold || volumeSold <= 0 || !salePrice || salePrice <= 0) {
+        return res.status(400).json({ error: 'A valid quantity and sale price must be provided.' });
     }
     try {
-        const result = await deleteAsset(assetId, volumeSold);
+        const result = await deleteAsset(assetId, volumeSold, salePrice); // Pass salePrice to the data layer
         if (result.status === 'not_found') return res.status(404).json({ error: 'Asset not found' });
         if (result.status === 'insufficient_volume') return res.status(400).json({ error: `Insufficient volume. Only ${result.currentVolume} units available.` });
         res.status(200).json({ message: `Asset ${result.status} successfully`, data: result });
     } catch (error) {
+        console.error("Error in delete route:", error);
         res.status(500).json({ error: 'Failed to process asset deletion' });
     }
 });
+
 
 app.get('/api/transactions', async (req, res) => {
     try {

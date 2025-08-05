@@ -1,7 +1,7 @@
 'use strict';
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
-import yahooFinance from "yahoo-finance2";
+
 dotenv.config();
 
 const dbConfig = {
@@ -68,9 +68,32 @@ async function addTransaction(name, category, price, date, quantity, type) {
 // PUBLIC: ADD ASSET + BUY TRANSACTION
 export async function addAsset(name, shortForm, price, volume, category, createdAt) {
     try {
-        const assetId = await addAssetToDB(name, shortForm, price, volume, category, createdAt);
+        // Find if an asset with the same symbol already exists
+        const conn = await mysql.createConnection(dbConfig);
+        const [existing] = await conn.execute('SELECT * FROM assets WHERE shortForm = ?', [shortForm]);
+
+        let assetId;
+        if (existing.length > 0) {
+            // Asset exists, update it
+            const existingAsset = existing[0];
+            const totalVolume = parseFloat(existingAsset.volume) + parseFloat(volume);
+            const totalCost = (parseFloat(existingAsset.price) * parseFloat(existingAsset.volume)) + (parseFloat(price) * parseFloat(volume));
+            const newAvgPrice = totalCost / totalVolume;
+
+            await conn.execute('UPDATE assets SET volume = ?, price = ? WHERE Asset_id = ?', [totalVolume, newAvgPrice, existingAsset.Asset_id]);
+            assetId = existingAsset.Asset_id;
+        } else {
+            // Asset doesn't exist, insert a new one
+            const query = `INSERT INTO assets (Name, shortForm, price, volume, category, createdAt) VALUES (?, ?, ?, ?, ?, ?)`;
+            const [result] = await conn.execute(query, [name, shortForm, price, volume, category, createdAt]);
+            assetId = result.insertId;
+        }
+        await conn.end();
+        
+        // Always add a new 'buy' transaction regardless of whether the asset was new or updated
         const transactionId = await addTransaction(name, category, price, createdAt, volume, 'buy');
         return { assetId, transactionId };
+
     } catch (error) {
         console.error('Error during asset and transaction handling:', error);
         throw error;
@@ -98,17 +121,15 @@ export async function updateAsset(assetId, name, shortForm, price, volume, categ
 }
 
 // PUBLIC: DELETE OR REDUCE ASSET + RECORD SELL TRANSACTION
-export async function deleteAsset(assetId, volumeSold) {
+export async function deleteAsset(assetId, volumeSold, salePrice) {
     const conn = await mysql.createConnection(dbConfig);
     try {
-        // Step 1: Get the asset's details, especially its symbol, from the DB
         const [assetRows] = await conn.execute(
             'SELECT Asset_id, name, shortForm as symbol, volume, category FROM assets WHERE Asset_id = ?',
             [assetId]
         );
 
         if (assetRows.length === 0) {
-            console.log(`Asset with Asset_id ${assetId} not found.`);
             return { status: 'not_found' };
         }
 
@@ -116,50 +137,27 @@ export async function deleteAsset(assetId, volumeSold) {
         const currentVolume = asset.volume;
 
         if (currentVolume < volumeSold) {
-            console.log(`Insufficient volume. Available: ${currentVolume}`);
             return { status: 'insufficient_volume', currentVolume };
         }
-
-        // Step 2: Fetch the current market price from Yahoo Finance using the symbol
-        let currentSellPrice;
-        try {
-            console.log(`Fetching current price for symbol: ${asset.symbol}`);
-            const quote = await yahooFinance.quote(asset.symbol);
-            if (!quote || typeof quote.regularMarketPrice !== 'number') {
-                throw new Error(`No valid market price found for ${asset.symbol}`);
-            }
-            currentSellPrice = quote.regularMarketPrice;
-            console.log(`Successfully fetched price: $${currentSellPrice}`);
-        } catch (yahooError) {
-            console.error('Yahoo Finance API error during sell operation:', yahooError);
-            throw new Error(`Could not retrieve current market price for ${asset.symbol} to complete the sale.`);
-        }
-
-        // Step 3: Perform the database update or deletion
-        let newVolume = currentVolume - volumeSold;
-        if (newVolume === 0) {
-            // Asset volume becomes 0, so delete the asset
+        
+        const newVolume = currentVolume - volumeSold;
+        if (newVolume < 0.001) { // Use a small threshold to handle floating point inaccuracies
             await conn.execute('DELETE FROM assets WHERE Asset_id = ?', [assetId]);
-            console.log(`Asset ${assetId} fully sold and deleted.`);
         } else {
-            // Update the volume of the asset
             await conn.execute('UPDATE assets SET volume = ? WHERE Asset_id = ?', [newVolume, assetId]);
-            console.log(`Asset ${assetId} updated. Remaining volume: ${newVolume}`);
         }
 
-        // Step 4: Add the transaction using the fetched currentSellPrice and the current date
-        await addTransaction(asset.name, asset.category, currentSellPrice, new Date(), volumeSold, 'sell');
+        // Record the transaction with the user-provided sale price
+        await addTransaction(asset.name, asset.category, salePrice, new Date(), volumeSold, 'sell');
 
-        return { status: newVolume === 0 ? 'deleted' : 'updated', id: assetId };
+        return { status: newVolume < 0.001 ? 'deleted' : 'updated', id: assetId };
     } catch (error) {
         console.error('Error processing asset sell:', error);
-        // Re-throw the error so the server can send a 500 response
         throw error;
     } finally {
         await conn.end();
     }
 }
-
 
 export async function getAllTransactions() {
     const conn = await mysql.createConnection(dbConfig);
