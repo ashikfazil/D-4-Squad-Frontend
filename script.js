@@ -237,7 +237,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const gainLossHTML = `<div class="${gainLossClass}" style="display:flex; align-items:center; gap: 0.5rem;"><i class="fas ${arrowClass}"></i><span>$${gainLoss.toFixed(2)}</span></div>`;
             
             const row = document.createElement('tr');
-            // MODIFIED: Removed the edit button from the Actions column
             row.innerHTML = `
                 <td data-label="Asset"><strong>${asset.symbol}</strong><br><small>${asset.name}</small></td>
                 <td data-label="Shares">${asset.shares.toFixed(2)}</td>
@@ -447,9 +446,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- REMOVED: All update modal functions and event listeners ---
-    // openUpdateModal, closeUpdateModal, updateAssetForm submit listener, etc.
-
     const openAddCashModal = () => {
         addCashModal.style.display = 'flex';
         setTimeout(() => addCashModal.classList.add('active'), 10);
@@ -485,57 +481,12 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error('Error adding funds:', error);
                 alert('Failed to add funds.');
-    // ... (previous code in script.js)
-
-    if (updateAssetForm) {
-        updateAssetForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const assetId = document.getElementById('updateAssetId').value;
-
-            // --- START: Added Validation ---
-            const volume = parseFloat(document.getElementById('updateAssetVolume').value);
-            if (isNaN(volume) || volume <= 0) {
-                alert('Quantity must be greater than 0.');
-                return; // Stop the form submission
-            }
-            // --- END: Added Validation ---
-
-            const updatedData = { 
-                name: document.getElementById('updateAssetName').value, 
-                shortForm: document.getElementById('updateAssetSymbol').value.toUpperCase(), 
-                volume: volume, // Use the validated volume
-                price: parseFloat(document.getElementById('updateAssetPrice').value), 
-                category: document.getElementById('updateAssetCategory').value 
-            };
-
-            try {
-                const response = await fetch(`http://localhost:3000/api/update-asset/${assetId}`, { 
-                    method: 'PUT', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify(updatedData) 
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to update asset on the server.');
-                }
-
-                closeUpdateModal();
-                await fetchAndRenderData();
-            } catch (error) { 
-                console.error('Error updating asset:', error); 
-                alert(`An error occurred while updating the asset: ${error.message}`);
             }
         });
     }
 
-// ... (rest of the code in script.js)
-
-    if(closeUpdateModalBtn) closeUpdateModalBtn.addEventListener('click', closeUpdateModal);
-    if(cancelUpdateBtn) cancelUpdateBtn.addEventListener('click', closeUpdateModal);
-
     if (mainContent) {
         mainContent.addEventListener('click', async (e) => {
-            // REMOVED: Click handler for the edit button
             const deleteButton = e.target.closest('.delete-btn');
             if (deleteButton) {
                 const assetId = deleteButton.getAttribute('data-asset-id');
