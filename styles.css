@@ -305,7 +305,6 @@ body {
     gap: 1rem;
 }
 
-/* New Form Fieldset Styles */
 .form-fieldset {
     border: 1px solid var(--border-color);
     border-radius: 12px;
@@ -374,7 +373,6 @@ body {
     gap: 1rem;
 }
 
-/* *** NEW: Styles for Performance Chart Section *** */
 .performance-card {
     margin-bottom: 2rem;
 }
@@ -425,47 +423,7 @@ body {
     height: 400px;
     position: relative;
 }
-/* *** END OF NEW STYLES *** */
 
-
-@media screen and (max-width: 1200px) {
-    .stats-grid { grid-template-columns: 1fr; }
-}
-
-@media screen and (max-width: 992px) {
-    .sidebar { display: none; }
-    .main-content { margin-left: 0; width: 100%; padding: 2rem; }
-    .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-}
-
-@media screen and (max-width: 768px) {
-    .main-content { padding: 1.5rem; }
-    .stats-grid, .form-row { grid-template-columns: 1fr; }
-    .portfolio-table thead { display: none; }
-    .portfolio-table tr {
-        display: block;
-        margin-bottom: 1.5rem;
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 1rem;
-    }
-    .portfolio-table td {
-        display: flex;
-        align-items: center;
-        padding: 0.5rem 0 0.5rem 50%;
-        position: relative;
-        border: none;
-    }
-    .portfolio-table td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 1rem;
-        width: 45%;
-        font-weight: 600;
-        color: var(--text-secondary);
-    }
-}
-/* Transaction History Table Styling */
 .transaction-table {
     width: 100%;
     border-collapse: collapse;
@@ -497,7 +455,6 @@ body {
     transition: background-color 0.3s ease;
   }
   
-  /* Transaction type coloring */
   .transaction-type-buy {
     color: var(--success-color);
     font-weight: 600;
@@ -508,46 +465,96 @@ body {
     font-weight: 600;
   }
   
-  /* Responsive adjustments */
-  @media screen and (max-width: 768px) {
-    .transaction-table thead {
-      display: none;
-    }
-  
-    .transaction-table, .transaction-table tbody, .transaction-table tr, .transaction-table td {
-      display: block;
-      width: 100%;
-    }
-  
-    .transaction-table tr {
-      margin-bottom: 1.25rem;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      box-shadow: var(--shadow-light);
-      padding: 1rem;
-    }
-  
-    .transaction-table td {
-      position: relative;
-      padding-left: 50%;
-      border: none;
-    }
-  
-    .transaction-table td::before {
-      position: absolute;
-      top: 0.75rem;
-      left: 1rem;
-      width: 45%;
-      white-space: nowrap;
-      font-weight: 600;
-      color: var(--text-secondary);
-      content: attr(data-label);
-    }
-  }
   .form-error {
     color: var(--danger-color);
     font-size: 0.875rem;
     margin-top: 0.5rem;
-    min-height: 1.2em; /* Prevents layout shift when message appears */
+    min-height: 1.2em; 
+}
+
+.header-right {
+    flex-shrink: 0;
+}
+.cash-wallet {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    box-shadow: var(--shadow-light);
+}
+.wallet-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-right: 1rem;
+}
+.wallet-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+.wallet-amount {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+.btn-add-cash {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+.btn-add-cash:hover {
+    background: var(--primary-dark);
+}
+
+@media screen and (max-width: 1200px) {
+    .stats-grid { grid-template-columns: 1fr; }
+}
+
+@media screen and (max-width: 992px) {
+    .sidebar { display: none; }
+    .main-content { margin-left: 0; width: 100%; padding: 2rem; }
+    .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+}
+
+@media screen and (max-width: 768px) {
+    .main-content { padding: 1.5rem; }
+    .stats-grid, .form-row { grid-template-columns: 1fr; }
+    .portfolio-table thead, .transaction-table thead { display: none; }
+
+    .portfolio-table tr, .transaction-table tr {
+        display: block;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1rem;
+        background: var(--bg-card);
+        box-shadow: var(--shadow-light);
+    }
+    .portfolio-table td, .transaction-table td {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0 0.5rem 50%;
+        position: relative;
+        border: none;
+    }
+    .portfolio-table td::before, .transaction-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 1rem;
+        width: 45%;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
 }

@@ -1,26 +1,48 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import yahooFinance from 'yahoo-finance2'; // <-- Now the primary source for all prices
-import { addAsset, deleteAsset, updateAsset, getAllAssets, getAllTransactions } from './dataLayer.js';
+import yahooFinance from 'yahoo-finance2';
+// MODIFIED: Removed 'updateAsset' from the import list
+import { addAsset, deleteAsset, getAllAssets, getAllTransactions, getCashBalance, updateCashBalance } from './dataLayer.js';
 
 dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// --- CENTRALIZED PRICE FETCHING ---
+// --- NEW: WALLET API ENDPOINTS ---
+app.get('/api/wallet', async (req, res) => {
+    try {
+        const balance = await getCashBalance();
+        res.status(200).json({ balance });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch wallet balance' });
+    }
+});
 
-// NEW: Universal route to get the current price for any valid ticker
+app.post('/api/wallet/add', async (req, res) => {
+    const { amount } = req.body;
+    if (typeof amount !== 'number' || amount <= 0) {
+        return res.status(400).json({ error: 'A valid positive amount is required.' });
+    }
+    try {
+        const currentBalance = await getCashBalance();
+        const newBalance = parseFloat(currentBalance) + amount; // Ensure numeric addition
+        await updateCashBalance(newBalance);
+        res.status(200).json({ message: 'Funds added successfully', newBalance });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to add funds to wallet' });
+    }
+});
+
+// --- CENTRALIZED PRICE FETCHING ---
 app.get('/api/current-price/:symbol', async (req, res) => {
     const { symbol } = req.params;
     try {
         const result = await yahooFinance.quote(symbol);
-        // Use regularMarketPrice as the standard source of truth for the current price
         if (result && result.regularMarketPrice) {
             res.status(200).json({ currentPrice: result.regularMarketPrice });
         } else {
-            // This handles cases where the ticker is valid but has no market price data
             throw new Error(`No market price data found for ${symbol}`);
         }
     } catch (error) {
@@ -29,8 +51,7 @@ app.get('/api/current-price/:symbol', async (req, res) => {
     }
 });
 
-// --- VALIDATION AND HISTORICAL DATA (No changes here) ---
-
+// --- VALIDATION AND HISTORICAL DATA ---
 app.get('/api/validate-ticker/:symbol', async (req, res) => {
     const { symbol } = req.params;
     try {
@@ -73,8 +94,7 @@ app.get('/api/historical-data/:symbol', async (req, res) => {
 });
 
 
-// --- DATABASE OPERATIONS (No changes from here down) ---
-
+// --- DATABASE OPERATIONS ---
 app.get('/api/assets', async (req, res) => {
     try {
         const assets = await getAllAssets();
@@ -90,21 +110,14 @@ app.post('/api/add-asset', async (req, res) => {
         const newAssetId = await addAsset(assetName, assetSymbol, purchasePrice, shares, category, purchaseDate);
         res.status(201).json({ message: 'Asset added successfully', assetId: newAssetId });
     } catch (error) {
+        if (error.message.includes('Insufficient funds')) {
+            return res.status(400).json({ error: error.message });
+        }
         res.status(500).json({ error: 'Failed to add asset' });
     }
 });
 
-app.put('/api/update-asset/:id', async (req, res) => {
-    const assetId = req.params.id;
-    const { name, shortForm, price, volume, category } = req.body;
-    try {
-        const updatedAsset = await updateAsset(assetId, name, shortForm, price, volume, category);
-        if (!updatedAsset) return res.status(404).json({ error: 'Asset not found' });
-        res.status(200).json({ message: 'Asset updated successfully', data: updatedAsset });
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to update asset' });
-    }
-});
+// REMOVED: The entire app.put('/api/update-asset/:id', ...) endpoint is gone.
 
 app.delete('/api/delete-asset/:id', async (req, res) => {
     const assetId = req.params.id;

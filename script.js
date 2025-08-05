@@ -5,10 +5,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const mainContent = document.querySelector('.main-content');
     const addAssetForm = document.getElementById('addAssetForm');
     
-    const updateAssetModal = document.getElementById('updateAssetModal');
-    const updateAssetForm = document.getElementById('updateAssetForm');
-    const closeUpdateModalBtn = document.getElementById('closeUpdateModal');
-    const cancelUpdateBtn = document.getElementById('cancelUpdate');
+    // --- REMOVED: Update Modal Elements ---
+    // const updateAssetModal = document.getElementById('updateAssetModal');
+    // const updateAssetForm = document.getElementById('updateAssetForm');
+    // const closeUpdateModalBtn = document.getElementById('closeUpdateModal');
+    // const cancelUpdateBtn = document.getElementById('cancelUpdate');
+
+    // --- NEW: Cash Wallet Elements ---
+    const addCashModal = document.getElementById('addCashModal');
+    const addCashForm = document.getElementById('addCashForm');
+    const addCashBtn = document.getElementById('addCashBtn');
+    const closeAddCashModalBtn = document.getElementById('closeAddCashModal');
+    const cancelAddCashBtn = document.getElementById('cancelAddCash');
+    const cashBalanceEl = document.getElementById('cash-balance');
+    let currentCashBalance = 0;
 
     const totalPortfolioValueEl = document.getElementById('total-portfolio-value');
     const totalAssetsCountEl = document.getElementById('total-assets-count');
@@ -57,7 +67,20 @@ document.addEventListener('DOMContentLoaded', () => {
         'history': 'Review your transaction history',
         'add-asset': 'Add a new investment to your portfolio'
     };
-//update the add asset form based on the selected category
+
+    const fetchAndDisplayWalletBalance = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/api/wallet');
+            if (!response.ok) throw new Error('Failed to fetch balance');
+            const data = await response.json();
+            currentCashBalance = parseFloat(data.balance);
+            cashBalanceEl.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(currentCashBalance);
+        } catch (error) {
+            console.error('Error fetching wallet balance:', error);
+            cashBalanceEl.textContent = 'Error';
+        }
+    };
+
     const toggleAssetFormFields = () => {
         const selectedCategory = assetCategorySelect.value;
         if (selectedCategory === 'commodities') {
@@ -74,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
             commodityTypeSelect.required = false;
         }
     };
-//give set of commodities to the commodity select
+
     const populateCommoditySelect = () => {
         commodityTypeSelect.innerHTML = ''; 
         for (const [name, symbol] of Object.entries(commodityMap)) {
@@ -189,9 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const gainLoss = totalValue - totalCost;
         totalPortfolioValueEl.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalValue);
-        // --- DEBUGGING CODE START ---
-        console.log('Number of items in portfolioAssets:', portfolioAssets.length);
-        console.log('Contents of portfolioAssets:', portfolioAssets);
         totalAssetsCountEl.textContent = portfolioAssets.length;
         totalGainLossEl.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(gainLoss);
         totalGainLossEl.className = gainLoss >= 0 ? 'positive' : 'negative';
@@ -202,7 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Modified to include a new `currentPrice` column
     const renderCategoryTable = (assets, tableBody, liveDataMap) => {
         tableBody.innerHTML = '';
         if (assets.length === 0) {
@@ -218,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const gainLossHTML = `<div class="${gainLossClass}" style="display:flex; align-items:center; gap: 0.5rem;"><i class="fas ${arrowClass}"></i><span>$${gainLoss.toFixed(2)}</span></div>`;
             
             const row = document.createElement('tr');
+            // MODIFIED: Removed the edit button from the Actions column
             row.innerHTML = `
                 <td data-label="Asset"><strong>${asset.symbol}</strong><br><small>${asset.name}</small></td>
                 <td data-label="Shares">${asset.shares.toFixed(2)}</td>
@@ -226,7 +246,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td data-label="Market Value">$${marketValue.toFixed(2)}</td>
                 <td data-label="Gain/Loss">${gainLossHTML}</td>
                 <td data-label="Actions">
-                    <button title="Edit" class="edit-btn" data-asset-id="${asset.id}"><i class="fas fa-pencil-alt"></i></button>
                     <button title="Delete" class="delete-btn" data-asset-id="${asset.id}"><i class="fas fa-trash"></i></button>
                 </td>
             `;
@@ -234,45 +253,42 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     
-    // *** UPDATED to use the new universal endpoint ***
     const fetchAndRenderData = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/assets');
-            if (!response.ok) throw new Error('Network response was not ok');
-            portfolioAssets = await response.json();
+            await Promise.all([
+                fetchAndDisplayWalletBalance(),
+                (async () => {
+                    const response = await fetch('http://localhost:3000/api/assets');
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    portfolioAssets = await response.json();
 
-            portfolioAssets.forEach(asset => {
-                if (asset.category) asset.category = asset.category.toLowerCase();
-            });
+                    portfolioAssets.forEach(asset => {
+                        if (asset.category) asset.category = asset.category.toLowerCase();
+                    });
 
-            // Get a unique list of all symbols from the portfolio
-            const allSymbols = [...new Set(portfolioAssets.map(a => a.symbol))];
+                    const allSymbols = [...new Set(portfolioAssets.map(a => a.symbol))];
+                    const fetchPrice = (symbol) => 
+                        fetch(`http://localhost:3000/api/current-price/${symbol}`)
+                            .then(res => res.ok ? res.json() : null)
+                            .then(data => ({ symbol, currentPrice: data ? data.currentPrice : null }))
+                            .catch(() => ({ symbol, currentPrice: null }));
 
-            // Create a single function to fetch price from the universal endpoint
-            const fetchPrice = (symbol) => 
-                fetch(`http://localhost:3000/api/current-price/${symbol}`)
-                    .then(res => res.ok ? res.json() : null)
-                    .then(data => ({ symbol, currentPrice: data ? data.currentPrice : null }))
-                    .catch(() => ({ symbol, currentPrice: null }));
+                    const pricePromises = allSymbols.map(symbol => fetchPrice(symbol));
+                    const liveDataResults = await Promise.all(pricePromises);
 
-            // Fetch all prices in parallel
-            const pricePromises = allSymbols.map(symbol => fetchPrice(symbol));
-            const liveDataResults = await Promise.all(pricePromises);
+                    const liveDataMap = new Map();
+                    liveDataResults.forEach(d => {
+                        if (d && d.currentPrice !== null) {
+                            liveDataMap.set(d.symbol, d.currentPrice);
+                        }
+                    });
 
-            // Create a single map for all live prices
-            const liveDataMap = new Map();
-            liveDataResults.forEach(d => {
-                if (d && d.currentPrice !== null) {
-                    liveDataMap.set(d.symbol, d.currentPrice);
-                }
-            });
-
-            // Update UI with the combined data
-            updateDashboard(liveDataMap);
-            renderCategoryTable(portfolioAssets.filter(a => a.category === 'stocks'), tableBodies.stocks, liveDataMap);
-            renderCategoryTable(portfolioAssets.filter(a => a.category === 'bonds'), tableBodies.bonds, liveDataMap);
-            renderCategoryTable(portfolioAssets.filter(a => a.category === 'commodities'), tableBodies.commodities, liveDataMap);
-
+                    updateDashboard(liveDataMap);
+                    renderCategoryTable(portfolioAssets.filter(a => a.category === 'stocks'), tableBodies.stocks, liveDataMap);
+                    renderCategoryTable(portfolioAssets.filter(a => a.category === 'bonds'), tableBodies.bonds, liveDataMap);
+                    renderCategoryTable(portfolioAssets.filter(a => a.category === 'commodities'), tableBodies.commodities, liveDataMap);
+                })()
+            ]);
         } catch (error) {
             console.error('Failed to fetch and render data:', error);
         }
@@ -290,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             transactions.forEach(tx => {
-                const formattedDate = new Date(tx.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const formattedDate = new Date(tx.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' – ' + new Date(tx.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td data-label="Name">${tx.name}</td>
@@ -349,6 +365,14 @@ document.addEventListener('DOMContentLoaded', () => {
             let isValid = true;
             
             const shares = parseFloat(document.getElementById('shares').value);
+            const purchasePrice = parseFloat(document.getElementById('purchasePrice').value);
+            const totalCost = shares * purchasePrice;
+
+            if (totalCost > currentCashBalance) {
+                alert(`Insufficient funds. Purchase cost: $${totalCost.toFixed(2)}, Your balance: $${currentCashBalance.toFixed(2)}.`);
+                return;
+            }
+
             if (isNaN(shares) || shares < 1) {
                 sharesErrorEl.textContent = 'Quantity must be at least 1.';
                 isValid = false;
@@ -395,80 +419,80 @@ document.addEventListener('DOMContentLoaded', () => {
             const newAsset = { 
                 assetName, 
                 assetSymbol, 
-                shares: shares, 
-                purchasePrice: parseFloat(document.getElementById('purchasePrice').value), 
+                shares, 
+                purchasePrice, 
                 purchaseDate: document.getElementById('purchaseDate').value, 
                 category 
             };
             try {
-                await fetch('http://localhost:3000/api/add-asset', { 
+                const response = await fetch('http://localhost:3000/api/add-asset', { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify(newAsset) 
                 });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.error || 'Server error on adding asset.');
+                }
+
                 addAssetForm.reset();
                 toggleAssetFormFields();
                 showView(newAsset.category);
                 await fetchAndRenderData();
             } catch (error) { 
                 console.error('Error adding asset:', error); 
-                alert('An error occurred while adding the asset.'); 
+                alert(`An error occurred while adding the asset: ${error.message}`); 
             }
         });
     }
 
-    const openUpdateModal = (asset) => {
-        document.getElementById('updateAssetId').value = asset.id;
-        document.getElementById('updateAssetName').value = asset.name;
-        document.getElementById('updateAssetSymbol').value = asset.symbol;
-        document.getElementById('updateAssetVolume').value = asset.shares;
-        document.getElementById('updateAssetPrice').value = asset.price;
-        document.getElementById('updateAssetCategory').value = asset.category || 'stocks';
-        updateAssetModal.style.display = 'flex';
-        setTimeout(() => updateAssetModal.classList.add('active'), 10);
+    // --- REMOVED: All update modal functions and event listeners ---
+    // openUpdateModal, closeUpdateModal, updateAssetForm submit listener, etc.
+
+    const openAddCashModal = () => {
+        addCashModal.style.display = 'flex';
+        setTimeout(() => addCashModal.classList.add('active'), 10);
     };
 
-    const closeUpdateModal = () => {
-        updateAssetModal.classList.remove('active');
-        setTimeout(() => { updateAssetModal.style.display = 'none'; }, 300);
+    const closeAddCashModal = () => {
+        addCashModal.classList.remove('active');
+        setTimeout(() => { addCashModal.style.display = 'none'; }, 300);
     };
 
-    if (updateAssetForm) {
-        updateAssetForm.addEventListener('submit', async (e) => {
+    if (addCashBtn) addCashBtn.addEventListener('click', openAddCashModal);
+    if (closeAddCashModalBtn) closeAddCashModalBtn.addEventListener('click', closeAddCashModal);
+    if (cancelAddCashBtn) cancelAddCashBtn.addEventListener('click', closeAddCashModal);
+    
+    if (addCashForm) {
+        addCashForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const assetId = document.getElementById('updateAssetId').value;
-            const updatedData = { 
-                name: document.getElementById('updateAssetName').value, 
-                shortForm: document.getElementById('updateAssetSymbol').value.toUpperCase(), 
-                volume: parseFloat(document.getElementById('updateAssetVolume').value), 
-                price: parseFloat(document.getElementById('updateAssetPrice').value), 
-                category: document.getElementById('updateAssetCategory').value 
-            };
+            const amountInput = document.getElementById('addCashAmount');
+            const amount = parseFloat(amountInput.value);
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid positive amount.');
+                return;
+            }
             try {
-                await fetch(`http://localhost:3000/api/update-asset/${assetId}`, { 
-                    method: 'PUT', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify(updatedData) 
+                await fetch('http://localhost:3000/api/wallet/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount })
                 });
-                closeUpdateModal();
-                await fetchAndRenderData();
-            } catch (error) { 
-                console.error('Error updating asset:', error); 
+                closeAddCashModal();
+                await fetchAndDisplayWalletBalance();
+                amountInput.value = '';
+            } catch (error) {
+                console.error('Error adding funds:', error);
+                alert('Failed to add funds.');
             }
         });
     }
 
-    if(closeUpdateModalBtn) closeUpdateModalBtn.addEventListener('click', closeUpdateModal);
-    if(cancelUpdateBtn) cancelUpdateBtn.addEventListener('click', closeUpdateModal);
 
     if (mainContent) {
         mainContent.addEventListener('click', async (e) => {
-            const editButton = e.target.closest('.edit-btn');
-            if (editButton) { 
-                const assetId = editButton.getAttribute('data-asset-id'); 
-                const asset = portfolioAssets.find(a => a.id == assetId); 
-                if (asset) openUpdateModal(asset); 
-            }
+            // REMOVED: Click handler for the edit button
             const deleteButton = e.target.closest('.delete-btn');
             if (deleteButton) {
                 const assetId = deleteButton.getAttribute('data-asset-id');

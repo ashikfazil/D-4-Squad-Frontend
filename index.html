@@ -68,6 +68,17 @@
                     <h1 class="page-title">Dashboard</h1>
                     <p class="page-subtitle">Welcome back! Here's your portfolio overview</p>
                 </div>
+                <div class="header-right">
+                    <div class="cash-wallet">
+                        <div class="wallet-info">
+                            <span class="wallet-label">Cash Balance</span>
+                            <span class="wallet-amount" id="cash-balance">$0.00</span>
+                        </div>
+                        <button class="btn-add-cash" id="addCashBtn" title="Add funds to your wallet">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
             </header>
 
             <div class="view active" id="dashboard-view">
@@ -255,7 +266,8 @@
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label for="shares">Quantity / Units</label>
-                                        <input type="number" id="shares" placeholder="0" min="0" step="1" required>
+                                        <input type="number" id="shares" placeholder="1" min="1" step="0.01" required>
+                                        <div class="form-error" id="sharesError"></div>
                                     </div>
                                     <div class="form-group">
                                         <label for="purchasePrice">Purchase Price (per Unit)</label>
@@ -279,50 +291,30 @@
             </div>
         </main>
     </div>
-
-    <div id="updateAssetModal" class="modal-overlay" style="display: none;">
+    
+    <!-- New Add Cash Modal -->
+    <div id="addCashModal" class="modal-overlay" style="display: none;">
         <div class="modal-content card">
-            <form id="updateAssetForm">
+            <form id="addCashForm">
                 <div class="modal-header">
-                    <h2>Update Asset</h2>
-                    <button type="button" class="close-modal" id="closeUpdateModal">×</button>
+                    <h2>Add Funds to Wallet</h2>
+                    <button type="button" class="close-modal" id="closeAddCashModal">×</button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" id="updateAssetId">
-                    <div class="form-group">
-                        <label for="updateAssetName">Asset Name</label>
-                        <input type="text" id="updateAssetName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="updateAssetSymbol">Asset Symbol</label>
-                        <input type="text" id="updateAssetSymbol" required>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="updateAssetVolume">Volume (Shares)</label>
-                            <input type="number" id="updateAssetVolume" min="0" step="any" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="updateAssetPrice">Price</label>
-                            <input type="number" id="updateAssetPrice" min="0" step="any" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="updateAssetCategory">Category</label>
-                        <select id="updateAssetCategory" required>
-                            <option value="stocks">Stocks</option>
-                            <option value="bonds">Bonds</option>
-                            <option value="commodities">Commodities</option>
-                        </select>
+                    <p>Enter the amount you would like to add to your cash balance.</p>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label for="addCashAmount">Amount</label>
+                        <input type="number" id="addCashAmount" min="1" step="0.01" placeholder="e.g., 500.00" required>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-secondary" id="cancelUpdate">Cancel</button>
-                    <button type="submit" class="btn-primary">Save Changes</button>
+                    <button type="button" class="btn-secondary" id="cancelAddCash">Cancel</button>
+                    <button type="submit" class="btn-primary">Add Funds</button>
                 </div>
             </form>
         </div>
     </div>
+
 
     <!-- Chart.js and necessary adapters -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
