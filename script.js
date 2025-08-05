@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'stocks': 'Manage your stock holdings',
         'bonds': 'Manage your bond holdings',
         'commodities': 'Manage your commodity holdings',
+        'performance': 'Analyze historical performance',
         'history': 'Review your transaction history',
         'add-asset': 'Add a new investment to your portfolio'
     };
@@ -216,16 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const arrowClass = gainLoss >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
             const gainLossHTML = `<div class="${gainLossClass}" style="display:flex; align-items:center; gap: 0.5rem;"><i class="fas ${arrowClass}"></i><span>$${gainLoss.toFixed(2)}</span></div>`;
             
-            // Add a new column for the current price
-            const thead = tableBody.closest('table').querySelector('thead tr');
-            if (!thead.querySelector('.current-price-header')) {
-                const th = document.createElement('th');
-                th.className = 'current-price-header';
-                th.textContent = 'Current Price';
-                // Insert after 'Purchase Price'
-                thead.children[2].insertAdjacentElement('afterend', th);
-            }
-            
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td data-label="Asset"><strong>${asset.symbol}</strong><br><small>${asset.name}</small></td>
@@ -302,12 +293,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const formattedDate = new Date(tx.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' – ' + new Date(tx.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${tx.name}</td>
-                    <td>${tx.category.toLowerCase()}</td>
-                    <td class="${tx.transaction_type === 'buy' ? 'positive' : 'negative'}">${tx.transaction_type.toLowerCase()}</td>
-                    <td>$${parseFloat(tx.price).toFixed(2)}</td>
-                    <td>${tx.quantity}</td>
-                    <td>${formattedDate}</td>
+                    <td data-label="Name">${tx.name}</td>
+                    <td data-label="Category">${tx.category.toLowerCase()}</td>
+                    <td data-label="Type" class="${tx.transaction_type === 'buy' ? 'transaction-type-buy' : 'transaction-type-sell'}">${tx.transaction_type.toLowerCase()}</td>
+                    <td data-label="Price">$${parseFloat(tx.price).toFixed(2)}</td>
+                    <td data-label="Quantity">${tx.quantity}</td>
+                    <td data-label="Date">${formattedDate}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -350,37 +341,79 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const symbolErrorEl = document.getElementById('assetSymbolError');
             const dateErrorEl = document.getElementById('purchaseDateError');
-            symbolErrorEl.textContent = ''; dateErrorEl.textContent = '';
+            const sharesErrorEl = document.getElementById('sharesError');
+            symbolErrorEl.textContent = ''; 
+            dateErrorEl.textContent = '';
+            sharesErrorEl.textContent = '';
+
             let isValid = true;
+            
+            const shares = parseFloat(document.getElementById('shares').value);
+            if (isNaN(shares) || shares < 1) {
+                sharesErrorEl.textContent = 'Quantity must be at least 1.';
+                isValid = false;
+            }
+
             const purchaseDate = new Date(document.getElementById('purchaseDate').value);
             const today = new Date();
             today.setHours(23, 59, 59, 999);
-            if (purchaseDate > today) { dateErrorEl.textContent = 'Purchase date cannot be in the future.'; isValid = false; }
+            if (purchaseDate > today) { 
+                dateErrorEl.textContent = 'Purchase date cannot be in the future.'; 
+                isValid = false; 
+            }
+
             const category = assetCategorySelect.value;
             let assetSymbol, assetName;
+
             if (category === 'commodities') {
                 assetSymbol = commodityTypeSelect.value;
                 assetName = commodityTypeSelect.options[commodityTypeSelect.selectedIndex].text;
             } else {
                 assetSymbol = document.getElementById('assetSymbol').value.toUpperCase();
                 assetName = document.getElementById('assetName').value;
-                if (!assetSymbol) { symbolErrorEl.textContent = "Symbol is required."; isValid = false; }
+                if (!assetSymbol) { 
+                    symbolErrorEl.textContent = "Symbol is required."; 
+                    isValid = false; 
+                }
                 else if (category === 'stocks' || category === 'bonds') {
                     try {
                         const response = await fetch(`http://localhost:3000/api/validate-ticker/${assetSymbol}`);
-                        if (!response.ok) { const err = await response.json(); symbolErrorEl.textContent = err.error || "Invalid ticker symbol."; isValid = false; }
-                    } catch (error) { symbolErrorEl.textContent = "Could not validate symbol. Please try again."; isValid = false; }
+                        if (!response.ok) { 
+                            const err = await response.json(); 
+                            symbolErrorEl.textContent = err.error || "Invalid ticker symbol."; 
+                            isValid = false; 
+                        }
+                    } catch (error) { 
+                        symbolErrorEl.textContent = "Could not validate symbol. Please try again."; 
+                        isValid = false; 
+                    }
                 }
             }
+
             if (!isValid) return;
-            const newAsset = { assetName, assetSymbol, shares: parseFloat(document.getElementById('shares').value), purchasePrice: parseFloat(document.getElementById('purchasePrice').value), purchaseDate: document.getElementById('purchaseDate').value, category };
+
+            const newAsset = { 
+                assetName, 
+                assetSymbol, 
+                shares: shares, 
+                purchasePrice: parseFloat(document.getElementById('purchasePrice').value), 
+                purchaseDate: document.getElementById('purchaseDate').value, 
+                category 
+            };
             try {
-                await fetch('http://localhost:3000/api/add-asset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newAsset) });
+                await fetch('http://localhost:3000/api/add-asset', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(newAsset) 
+                });
                 addAssetForm.reset();
                 toggleAssetFormFields();
                 showView(newAsset.category);
                 await fetchAndRenderData();
-            } catch (error) { console.error('Error adding asset:', error); alert('An error occurred while adding the asset.'); }
+            } catch (error) { 
+                console.error('Error adding asset:', error); 
+                alert('An error occurred while adding the asset.'); 
+            }
         });
     }
 
@@ -404,12 +437,24 @@ document.addEventListener('DOMContentLoaded', () => {
         updateAssetForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const assetId = document.getElementById('updateAssetId').value;
-            const updatedData = { name: document.getElementById('updateAssetName').value, shortForm: document.getElementById('updateAssetSymbol').value.toUpperCase(), volume: parseFloat(document.getElementById('updateAssetVolume').value), price: parseFloat(document.getElementById('updateAssetPrice').value), category: document.getElementById('updateAssetCategory').value };
+            const updatedData = { 
+                name: document.getElementById('updateAssetName').value, 
+                shortForm: document.getElementById('updateAssetSymbol').value.toUpperCase(), 
+                volume: parseFloat(document.getElementById('updateAssetVolume').value), 
+                price: parseFloat(document.getElementById('updateAssetPrice').value), 
+                category: document.getElementById('updateAssetCategory').value 
+            };
             try {
-                await fetch(`http://localhost:3000/api/update-asset/${assetId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedData) });
+                await fetch(`http://localhost:3000/api/update-asset/${assetId}`, { 
+                    method: 'PUT', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(updatedData) 
+                });
                 closeUpdateModal();
                 await fetchAndRenderData();
-            } catch (error) { console.error('Error updating asset:', error); }
+            } catch (error) { 
+                console.error('Error updating asset:', error); 
+            }
         });
     }
 
@@ -419,7 +464,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mainContent) {
         mainContent.addEventListener('click', async (e) => {
             const editButton = e.target.closest('.edit-btn');
-            if (editButton) { const assetId = editButton.getAttribute('data-asset-id'); const asset = portfolioAssets.find(a => a.id == assetId); if (asset) openUpdateModal(asset); }
+            if (editButton) { 
+                const assetId = editButton.getAttribute('data-asset-id'); 
+                const asset = portfolioAssets.find(a => a.id == assetId); 
+                if (asset) openUpdateModal(asset); 
+            }
             const deleteButton = e.target.closest('.delete-btn');
             if (deleteButton) {
                 const assetId = deleteButton.getAttribute('data-asset-id');
@@ -428,11 +477,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const sharesToSell = prompt(`How many shares of ${asset.symbol} to sell? (Max: ${asset.shares})`);
                 if (sharesToSell === null || sharesToSell.trim() === '') return;
                 const volumeSold = parseFloat(sharesToSell);
-                if (isNaN(volumeSold) || volumeSold <= 0 || volumeSold > asset.shares) { alert(`Invalid input. Please enter a number between 0 and ${asset.shares}.`); return; }
+                if (isNaN(volumeSold) || volumeSold <= 0 || volumeSold > asset.shares) { 
+                    alert(`Invalid input. Please enter a number between 0 and ${asset.shares}.`); 
+                    return; 
+                }
                 try {
-                    await fetch(`http://localhost:3000/api/delete-asset/${assetId}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ volumeSold }) });
+                    await fetch(`http://localhost:3000/api/delete-asset/${assetId}`, { 
+                        method: 'DELETE', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ volumeSold }) 
+                    });
                     await fetchAndRenderData();
-                } catch (error) { console.error('Error selling asset:', error); }
+                } catch (error) { 
+                    console.error('Error selling asset:', error); 
+                }
             }
         });
     }
