@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'history': 'Review your transaction history',
         'add-asset': 'Add a new investment to your portfolio'
     };
-
+//update the add asset form based on the selected category
     const toggleAssetFormFields = () => {
         const selectedCategory = assetCategorySelect.value;
         if (selectedCategory === 'commodities') {
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
             commodityTypeSelect.required = false;
         }
     };
-
+//give set of commodities to the commodity select
     const populateCommoditySelect = () => {
         commodityTypeSelect.innerHTML = ''; 
         for (const [name, symbol] of Object.entries(commodityMap)) {
@@ -188,6 +188,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const gainLoss = totalValue - totalCost;
         totalPortfolioValueEl.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalValue);
+        // --- DEBUGGING CODE START ---
+        console.log('Number of items in portfolioAssets:', portfolioAssets.length);
+        console.log('Contents of portfolioAssets:', portfolioAssets);
         totalAssetsCountEl.textContent = portfolioAssets.length;
         totalGainLossEl.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(gainLoss);
         totalGainLossEl.className = gainLoss >= 0 ? 'positive' : 'negative';
