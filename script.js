@@ -299,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             transactions.forEach(tx => {
-                const formattedDate = new Date(tx.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' – ' + new Date(tx.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                const formattedDate = new Date(tx.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${tx.name}</td>
