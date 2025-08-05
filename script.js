@@ -485,10 +485,53 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error('Error adding funds:', error);
                 alert('Failed to add funds.');
+    // ... (previous code in script.js)
+
+    if (updateAssetForm) {
+        updateAssetForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const assetId = document.getElementById('updateAssetId').value;
+
+            // --- START: Added Validation ---
+            const volume = parseFloat(document.getElementById('updateAssetVolume').value);
+            if (isNaN(volume) || volume <= 0) {
+                alert('Quantity must be greater than 0.');
+                return; // Stop the form submission
+            }
+            // --- END: Added Validation ---
+
+            const updatedData = { 
+                name: document.getElementById('updateAssetName').value, 
+                shortForm: document.getElementById('updateAssetSymbol').value.toUpperCase(), 
+                volume: volume, // Use the validated volume
+                price: parseFloat(document.getElementById('updateAssetPrice').value), 
+                category: document.getElementById('updateAssetCategory').value 
+            };
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/update-asset/${assetId}`, { 
+                    method: 'PUT', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(updatedData) 
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update asset on the server.');
+                }
+
+                closeUpdateModal();
+                await fetchAndRenderData();
+            } catch (error) { 
+                console.error('Error updating asset:', error); 
+                alert(`An error occurred while updating the asset: ${error.message}`);
             }
         });
     }
 
+// ... (rest of the code in script.js)
+
+    if(closeUpdateModalBtn) closeUpdateModalBtn.addEventListener('click', closeUpdateModal);
+    if(cancelUpdateBtn) cancelUpdateBtn.addEventListener('click', closeUpdateModal);
 
     if (mainContent) {
         mainContent.addEventListener('click', async (e) => {
