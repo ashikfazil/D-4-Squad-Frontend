@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             transactions.forEach(tx => {
-                const formattedDate = new Date(tx.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const formattedDate = new Date(tx.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' – ' + new Date(tx.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td data-label="Name">${tx.name}</td>
@@ -433,30 +433,50 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { updateAssetModal.style.display = 'none'; }, 300);
     };
 
+    // ... (previous code in script.js)
+
     if (updateAssetForm) {
         updateAssetForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const assetId = document.getElementById('updateAssetId').value;
+
+            // --- START: Added Validation ---
+            const volume = parseFloat(document.getElementById('updateAssetVolume').value);
+            if (isNaN(volume) || volume <= 0) {
+                alert('Quantity must be greater than 0.');
+                return; // Stop the form submission
+            }
+            // --- END: Added Validation ---
+
             const updatedData = { 
                 name: document.getElementById('updateAssetName').value, 
                 shortForm: document.getElementById('updateAssetSymbol').value.toUpperCase(), 
-                volume: parseFloat(document.getElementById('updateAssetVolume').value), 
+                volume: volume, // Use the validated volume
                 price: parseFloat(document.getElementById('updateAssetPrice').value), 
                 category: document.getElementById('updateAssetCategory').value 
             };
+
             try {
-                await fetch(`http://localhost:3000/api/update-asset/${assetId}`, { 
+                const response = await fetch(`http://localhost:3000/api/update-asset/${assetId}`, { 
                     method: 'PUT', 
                     headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify(updatedData) 
                 });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update asset on the server.');
+                }
+
                 closeUpdateModal();
                 await fetchAndRenderData();
             } catch (error) { 
                 console.error('Error updating asset:', error); 
+                alert(`An error occurred while updating the asset: ${error.message}`);
             }
         });
     }
+
+// ... (rest of the code in script.js)
 
     if(closeUpdateModalBtn) closeUpdateModalBtn.addEventListener('click', closeUpdateModal);
     if(cancelUpdateBtn) cancelUpdateBtn.addEventListener('click', closeUpdateModal);
