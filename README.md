@@ -1,6 +1,6 @@
 # 📈 AssetFlow - Full-Stack Portfolio Tracker
 
-**AssetFlow** is a dynamic, single-page web application designed for comprehensive personal investment tracking. It features a responsive frontend built with vanilla JavaScript that communicates with a Node.js backend to provide real-time asset valuation, historical performance analysis, and complete transaction management.
+**AssetFlow** is a dynamic, single-page web application designed for comprehensive personal investment tracking. It features a responsive frontend built with JavaScript that communicates with a Node.js backend to provide real-time asset valuation, historical performance analysis, and complete transaction management.
 
 ---
 
@@ -50,7 +50,7 @@
 | Area      | Technology |
 |-----------|------------|
 | Backend   | Node.js, Express.js, `mysql2`, `yahoo-finance2`, `dotenv` |
-| Frontend  | Vanilla JavaScript (ES6+), HTML5, CSS3, Chart.js |
+| Frontend  | JavaScript (ES6+), HTML5, CSS3, Chart.js |
 | Database  | MySQL |
 
 ---
