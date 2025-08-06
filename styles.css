@@ -391,20 +391,26 @@ body {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+    align-items: center; /* Vertically align buttons */
 }
 
-.range-selector .btn-secondary {
-    background-color: var(--bg-primary);
+.range-btn.btn-secondary {
+    background-color: var(--bg-card); /* Changed from bg-primary */
+    border-color: var(--border-color);
 }
 
-.range-selector .btn-secondary.active {
+.range-btn.btn-secondary:hover {
+    background-color: var(--bg-primary); /* Add a hover state */
+}
+
+.range-btn.btn-secondary.active {
     background-color: var(--primary-color);
     color: white;
     border-color: var(--primary-dark);
 }
 
 .custom-date-range {
-    display: flex;
+    display: none; /* Hidden by default */
     gap: 1rem;
     flex-wrap: wrap;
 }
@@ -518,8 +524,77 @@ body {
     background: var(--primary-dark);
 }
 
+/* --- REFINED STYLES FOR COMPARISON VIEW --- */
+
+.comparison-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 1.5rem;
+    background-color: var(--bg-card);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-light);
+}
+
+.comparison-controls .input-group {
+    flex-grow: 1;
+    min-width: 150px;
+}
+
+.comparison-controls .input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.comparison-controls .input-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.comparison-controls .input-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.comparison-chart-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    width: 100%;
+}
+
+.chart-wrapper {
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    position: relative; /* This is the critical line */
+}
+
+.chart-wrapper h3 {
+    text-align: center;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+
 @media screen and (max-width: 1200px) {
     .stats-grid { grid-template-columns: 1fr; }
+    .comparison-chart-container {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media screen and (max-width: 992px) {
@@ -556,5 +631,9 @@ body {
         width: 45%;
         font-weight: 600;
         color: var(--text-secondary);
+    }
+    .comparison-controls {
+        flex-direction: column;
+        align-items: stretch;
     }
 }

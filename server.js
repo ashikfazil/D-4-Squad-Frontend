@@ -144,6 +144,85 @@ app.get('/api/transactions', async (req, res) => {
     }
 });
 
+// Historical Value for dashboard
+
+app.get('/api/historical-value-by-category', async (req, res) => {
+    try {
+        const transactions = await getAllTransactions();
+        const assets = await getAllAssets();
+
+        // Sort transactions by date ascending
+        transactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const historicalValue = {};
+        const dailyValues = {};
+
+        const allSymbols = [...new Set(assets.map(a => a.symbol))];
+        const priceCache = {};
+
+        // Fetch all historical prices at once
+        const pricePromises = allSymbols.map(async (symbol) => {
+            try {
+                const historicalPrices = await yahooFinance.historical(symbol, {
+                    period1: '2020-01-01', // A reasonable start date
+                    interval: '1d'
+                });
+                priceCache[symbol] = {};
+                historicalPrices.forEach(price => {
+                    const dateStr = new Date(price.date).toISOString().split('T')[0];
+                    priceCache[symbol][dateStr] = price.close;
+                });
+            } catch (error) {
+                console.error(`Failed to fetch historical data for ${symbol}:`, error);
+            }
+        });
+
+        await Promise.all(pricePromises);
+
+        let portfolioState = {};
+
+        const startDate = new Date(transactions[0]?.date || '2020-01-01');
+        const endDate = new Date();
+
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            const dateStr = d.toISOString().split('T')[0];
+
+            transactions.forEach(tx => {
+                const txDateStr = new Date(tx.date).toISOString().split('T')[0];
+                if (txDateStr === dateStr) {
+                    const symbol = assets.find(a => a.name === tx.name)?.symbol;
+                    if (!portfolioState[symbol]) {
+                        portfolioState[symbol] = { quantity: 0, category: tx.category };
+                    }
+                    if (tx.transaction_type === 'buy') {
+                        portfolioState[symbol].quantity += tx.quantity;
+                    } else if (tx.transaction_type === 'sell') {
+                        portfolioState[symbol].quantity -= tx.quantity;
+                    }
+                }
+            });
+
+            let dailyTotal = { stocks: 0, bonds: 0, commodities: 0 };
+            for (const symbol in portfolioState) {
+                const asset = portfolioState[symbol];
+                const price = priceCache[symbol]?.[dateStr] || priceCache[symbol]?.[Object.keys(priceCache[symbol] || {}).sort().pop()] || 0; // Use last known price if not available for the day
+                const value = asset.quantity * price;
+                if (asset.category && dailyTotal.hasOwnProperty(asset.category.toLowerCase())) {
+                    dailyTotal[asset.category.toLowerCase()] += value;
+                }
+            }
+
+            dailyValues[dateStr] = dailyTotal;
+        }
+
+        res.status(200).json(dailyValues);
+
+    } catch (error) {
+        console.error('Error fetching historical portfolio value by category:', error);
+        res.status(500).json({ error: 'Failed to fetch historical portfolio value' });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

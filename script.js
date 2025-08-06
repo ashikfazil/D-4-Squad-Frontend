@@ -4,12 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const VIEWS = document.querySelectorAll('.view');
     const mainContent = document.querySelector('.main-content');
     const addAssetForm = document.getElementById('addAssetForm');
-    
-    // --- REMOVED: Update Modal Elements ---
-    // const updateAssetModal = document.getElementById('updateAssetModal');
-    // const updateAssetForm = document.getElementById('updateAssetForm');
-    // const closeUpdateModalBtn = document.getElementById('closeUpdateModal');
-    // const cancelUpdateBtn = document.getElementById('cancelUpdate');
 
     // --- NEW: Cash Wallet Elements ---
     const addCashModal = document.getElementById('addCashModal');
@@ -49,6 +43,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const startDateInput = document.getElementById('startDateInput');
     const endDateInput = document.getElementById('endDateInput');
     
+    // --- Comparison View Elements ---
+    const getComparisonBtn = document.getElementById('getComparisonBtn');
+    const comparisonChartContainer = document.getElementById('comparisonChartContainer');
+    const comparisonSymbol1Input = document.getElementById('comparisonSymbol1');
+    const comparisonSymbol2Input = document.getElementById('comparisonSymbol2');
+    const comparisonChart1Title = document.getElementById('comparisonChart1Title');
+    const comparisonChart2Title = document.getElementById('comparisonChart2Title');
+
+
     const assetCategorySelect = document.getElementById('assetCategory');
     const stockBondFields = document.getElementById('stock-bond-fields');
     const commodityFields = document.getElementById('commodity-fields');
@@ -56,7 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let portfolioAssets = [];
     let allocationPieChart;
-    let stockPerformanceChart; 
+    let stockPerformanceChart;
+    let comparisonChart1, comparisonChart2;
+
 
     const subtitles = {
         'dashboard': "Welcome back! Here's your portfolio overview",
@@ -65,7 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'commodities': 'Manage your commodity holdings',
         'performance': 'Analyze historical performance',
         'history': 'Review your transaction history',
-        'add-asset': 'Add a new investment to your portfolio'
+        'add-asset': 'Add a new investment to your portfolio',
+        'comparison': 'Compare the historical performance of two assets'
     };
 
     const fetchAndDisplayWalletBalance = async () => {
@@ -143,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     datasets: [{
                         label: 'Asset Allocation',
                         data: [],
-                        backgroundColor: ['#0d9488', '#f59e0b', '#10b981'],
+                        backgroundColor: ['#0d9488', '#f59e0b', '#10b981', '#6b7280'],
                         borderColor: '#ffffff',
                         borderWidth: 2
                     }]
@@ -195,29 +201,85 @@ document.addEventListener('DOMContentLoaded', () => {
         performanceChartContainer.style.display = 'none'; 
     };
 
+    // --- MODIFIED: Updated initialization function for comparison charts ---
+    const initializeComparisonCharts = () => {
+        const chart1Ctx = document.getElementById('comparisonChart1')?.getContext('2d');
+        const chart2Ctx = document.getElementById('comparisonChart2')?.getContext('2d');
+        if (!chart1Ctx || !chart2Ctx) return;
+
+        // More robust options to ensure correct rendering
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false, // This is crucial
+            scales: {
+                x: { 
+                    type: 'time', 
+                    time: { unit: 'day' }, 
+                    title: { display: false } 
+                },
+                y: { 
+                    title: { display: true, text: 'Price ($)' } 
+                }
+            },
+            plugins: { 
+                legend: { display: false },
+                tooltip: { mode: 'index', intersect: false }
+            }
+        };
+
+        const chartConfig = (label) => ({
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: label,
+                    data: [],
+                    borderColor: 'var(--primary-color)',
+                    backgroundColor: 'rgba(13, 148, 136, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 1,
+                    tension: 0.1,
+                    fill: true,
+                }]
+            },
+            options: chartOptions
+        });
+
+        comparisonChart1 = new Chart(chart1Ctx, chartConfig('Asset 1'));
+        comparisonChart2 = new Chart(chart2Ctx, chartConfig('Asset 2'));
+    };
+
+
     const updateDashboard = (liveDataMap) => {
         if (!totalPortfolioValueEl || !totalAssetsCountEl) return;
-        let totalValue = 0;
-        let totalCost = 0;
-        const allocation = { stocks: 0, bonds: 0, commodities: 0 };
+        
+        let totalAssetsMarketValue = 0;
+        let totalAssetsCostBasis = 0;
+        const allocationForChart = { stocks: 0, bonds: 0, commodities: 0, cash: currentCashBalance }; 
+        
         portfolioAssets.forEach(asset => {
             const livePrice = liveDataMap.get(asset.symbol) || asset.price;
-            const marketValue = asset.shares * livePrice;
-            const costBasis = asset.shares * asset.price;
-            totalValue += marketValue;
-            totalCost += costBasis;
-            if (allocation.hasOwnProperty(asset.category)) {
-                allocation[asset.category] += marketValue;
+            const assetMarketValue = asset.shares * livePrice;
+            const assetCostBasis = asset.shares * asset.price;
+            
+            totalAssetsMarketValue += assetMarketValue;
+            totalAssetsCostBasis += assetCostBasis;
+
+            if (allocationForChart.hasOwnProperty(asset.category)) {
+                allocationForChart[asset.category] += assetMarketValue;
             }
         });
-        const gainLoss = totalValue - totalCost;
-        totalPortfolioValueEl.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalValue);
+
+        const grandTotalPortfolioValue = totalAssetsMarketValue + currentCashBalance;
+        const totalAssetsGainLoss = totalAssetsMarketValue - totalAssetsCostBasis;
+
+        totalPortfolioValueEl.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(grandTotalPortfolioValue);
         totalAssetsCountEl.textContent = portfolioAssets.length;
-        totalGainLossEl.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(gainLoss);
-        totalGainLossEl.className = gainLoss >= 0 ? 'positive' : 'negative';
+        totalGainLossEl.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalAssetsGainLoss);
+        totalGainLossEl.className = totalAssetsGainLoss >= 0 ? 'positive' : 'negative';
+
         if (allocationPieChart) {
-            allocationPieChart.data.labels = Object.keys(allocation).map(k => k.charAt(0).toUpperCase() + k.slice(1));
-            allocationPieChart.data.datasets[0].data = Object.values(allocation);
+            allocationPieChart.data.labels = Object.keys(allocationForChart).map(k => k.charAt(0).toUpperCase() + k.slice(1));
+            allocationPieChart.data.datasets[0].data = Object.values(allocationForChart);
             allocationPieChart.update();
         }
     };
@@ -348,6 +410,53 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error fetching performance data:', error);
             alert(`Error: ${error.message}`);
             performanceChartContainer.style.display = 'none';
+        }
+    };
+
+    const fetchAndRenderComparisonData = async () => {
+        const symbol1 = comparisonSymbol1Input.value.trim().toUpperCase();
+        const symbol2 = comparisonSymbol2Input.value.trim().toUpperCase();
+
+        if (!symbol1 || !symbol2) {
+            alert('Please enter two asset tickers to compare.');
+            return;
+        }
+
+        const activeRangeBtn = document.querySelector('#comparison-view .range-btn.active');
+        const range = activeRangeBtn ? activeRangeBtn.dataset.range : '30d';
+
+        const buildUrl = (symbol) => `http://localhost:3000/api/historical-data/${symbol}?range=${range}`;
+
+        try {
+            const [response1, response2] = await Promise.all([
+                fetch(buildUrl(symbol1)),
+                fetch(buildUrl(symbol2))
+            ]);
+
+            const data1 = response1.ok ? await response1.json() : null;
+            const data2 = response2.ok ? await response2.json() : null;
+
+            if (!data1 || !data2) {
+                let errorMessage = '';
+                if (!data1) errorMessage += `Could not fetch data for ${symbol1}. `;
+                if (!data2) errorMessage += `Could not fetch data for ${symbol2}.`;
+                throw new Error(errorMessage);
+            }
+
+            comparisonChart1Title.textContent = symbol1;
+            comparisonChart1.data.datasets[0].data = data1;
+            comparisonChart1.update();
+
+            comparisonChart2Title.textContent = symbol2;
+            comparisonChart2.data.datasets[0].data = data2;
+            comparisonChart2.update();
+
+            comparisonChartContainer.style.display = 'grid'; // Use grid to display side-by-side
+
+        } catch (error) {
+            console.error('Error fetching comparison data:', error);
+            alert(`An error occurred: ${error.message}`);
+            comparisonChartContainer.style.display = 'none';
         }
     };
 
@@ -500,13 +609,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     return; 
                 }
                 try {
-                    await fetch(`http://localhost:3000/api/delete-asset/${assetId}`, { 
+                    const response = await fetch(`http://localhost:3000/api/delete-asset/${assetId}`, { 
                         method: 'DELETE', 
                         headers: { 'Content-Type': 'application/json' }, 
                         body: JSON.stringify({ volumeSold }) 
                     });
+                     if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.error);
+                    }
                     await fetchAndRenderData();
                 } catch (error) { 
+                    alert(`Error: ${error.message}`);
                     console.error('Error selling asset:', error); 
                 }
             }
@@ -514,16 +628,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (getPerformanceBtn) getPerformanceBtn.addEventListener('click', fetchAndRenderPerformanceData);
-    rangeButtons.forEach(button => button.addEventListener('click', () => {
-        rangeButtons.forEach(btn => btn.classList.remove('active'));
+    
+    rangeButtons.forEach(button => button.addEventListener('click', (e) => {
+        const parentSelector = e.target.closest('.range-selector');
+        if(!parentSelector) return;
+
+        parentSelector.querySelectorAll('.range-btn').forEach(btn => btn.classList.remove('active'));
         button.classList.add('active');
-        customDateRange.style.display = button.dataset.range === 'custom' ? 'flex' : 'none';
+        
+        const parentView = button.closest('.view');
+        const customDateEl = parentView.querySelector('.custom-date-range');
+        if(customDateEl) {
+            customDateEl.style.display = button.dataset.range === 'custom' ? 'flex' : 'none';
+        }
     }));
+    
+    if (getComparisonBtn) {
+        getComparisonBtn.addEventListener('click', fetchAndRenderComparisonData);
+    }
 
     if (assetCategorySelect) assetCategorySelect.addEventListener('change', toggleAssetFormFields);
 
+    // --- Initialize all charts on load ---
     initializeCharts();
     initializePerformanceChart();
+    initializeComparisonCharts();
     populateCommoditySelect();
     toggleAssetFormFields();
     fetchAndRenderData();

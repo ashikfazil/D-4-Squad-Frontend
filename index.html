@@ -39,6 +39,10 @@
                     <i class="fas fa-chart-pie"></i>
                     <span>Performance</span>
                 </li>
+                <li class="nav-item" data-view="comparison">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Comparison</span>
+                </li>
                 <li class="nav-item" data-view="history">
                     <i class="fas fa-history"></i>
                     <span>History</span>
@@ -197,7 +201,42 @@
                     </table>
                 </div>
             </div>
+                        <!-- ======================= Comparison View (Corrected) ======================= -->
+            <div id="comparison-view" class="view">
 
+                <!-- Comparison Controls with correct classes -->
+                <div class="comparison-controls">
+                    <div class="input-group">
+                        <label for="comparisonSymbol1">Asset 1 Ticker</label>
+                        <input type="text" id="comparisonSymbol1" placeholder="e.g., AAPL">
+                    </div>
+                    <div class="input-group">
+                        <label for="comparisonSymbol2">Asset 2 Ticker</label>
+                        <input type="text" id="comparisonSymbol2" placeholder="e.g., GOOGL">
+                    </div>
+
+                    <!-- Use the same range-selector class from the performance tab -->
+                    <div class="range-selector">
+                        <button class="range-btn btn-secondary active" data-range="30d">30d</button>
+                        <button class="range-btn btn-secondary" data-range="365d">1yr</button>
+                    </div>
+                    
+                    <!-- Use a consistent button class -->
+                    <button id="getComparisonBtn" class="btn-primary">Compare</button>
+                </div>
+
+                <!-- Chart Containers -->
+                <div id="comparisonChartContainer" class="comparison-chart-container" style="display: none;">
+                    <div class="chart-wrapper card">
+                        <h3 id="comparisonChart1Title"></h3>
+                        <canvas id="comparisonChart1"></canvas>
+                    </div>
+                    <div class="chart-wrapper card">
+                        <h3 id="comparisonChart2Title"></h3>
+                        <canvas id="comparisonChart2"></canvas>
+                    </div>
+                </div>
+            </div>
             <div class="view" id="history-view">
                 <div class="card">
                   <div class="card-header">

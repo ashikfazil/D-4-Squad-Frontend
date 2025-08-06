@@ -8,7 +8,7 @@ const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || 'n3u3da!',
-    database: process.env.DB_NAME || 'project',
+    database: process.env.DB_NAME || 'financial_monitor',
 };
 
 // --- NEW: WALLET FUNCTIONS ---
@@ -79,7 +79,7 @@ async function addTransaction(name, category, price, date, quantity, type) {
     const conn = await mysql.createConnection(dbConfig);
     try {
         const query = `
-            INSERT INTO transactions (name, category, transaction_type, price, date, quantity)   
+            INSERT INTO transaction (name, category, transaction_type, price, date, quantity)   
             VALUES (?, ?, ?, ?, ?, ?)
         `;
         const [result] = await conn.execute(query, [name, category, type, price, date, quantity]);
@@ -119,7 +119,7 @@ export async function addAsset(name, shortForm, price, volume, category, created
         const assetId = assetResult.insertId;
 
         const transactionQuery = `
-            INSERT INTO transactions (name, category, transaction_type, price, date, quantity)   
+            INSERT INTO transaction (name, category, transaction_type, price, date, quantity)   
             VALUES (?, ?, ?, ?, ?, ?)
         `;
         const [transactionResult] = await conn.execute(transactionQuery, [name, category, 'buy', price, createdAt, volume]);
@@ -177,7 +177,6 @@ export async function deleteAsset(assetId, volumeSold) {
         
         const totalSaleValue = currentSellPrice * volumeSold;
         const [walletRows] = await conn.execute('SELECT balance, id FROM wallet ORDER BY id LIMIT 1 FOR UPDATE');
-        
         const newBalance = parseFloat(walletRows[0].balance) + totalSaleValue;
 
         await conn.execute('UPDATE wallet SET balance = ? WHERE id = ?', [newBalance, walletRows[0].id]);
@@ -206,7 +205,7 @@ export async function deleteAsset(assetId, volumeSold) {
 export async function getAllTransactions() {
     const conn = await mysql.createConnection(dbConfig);
     try {
-        const [rows] = await conn.execute(`SELECT * FROM transactions ORDER BY date DESC`);
+        const [rows] = await conn.execute(`SELECT * FROM transaction ORDER BY date DESC`);
         return rows;
     } catch (err) {
         console.error("Error fetching transactions:", err);
