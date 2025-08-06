@@ -228,15 +228,14 @@ body {
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
 }
 
 .chart-container {
-    max-width: 450px;
-    margin: auto;
-    height: 450px;
     position: relative;
+    height: 450px;
+    width: 100%;
 }
 
 .portfolio-table-container { overflow-x: auto; }
@@ -591,8 +590,7 @@ body {
 
 
 @media screen and (max-width: 1200px) {
-    .stats-grid { grid-template-columns: 1fr; }
-    .comparison-chart-container {
+    .stats-grid, .dashboard-grid, .comparison-chart-container {
         grid-template-columns: 1fr;
     }
 }

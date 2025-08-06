@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelAddCashBtn = document.getElementById('cancelAddCash');
     const cashBalanceEl = document.getElementById('cash-balance');
     let currentCashBalance = 0;
+    let categoryValueChart;
 
     const totalPortfolioValueEl = document.getElementById('total-portfolio-value');
     const totalAssetsCountEl = document.getElementById('total-assets-count');
@@ -103,7 +104,74 @@ document.addEventListener('DOMContentLoaded', () => {
             commodityTypeSelect.required = false;
         }
     };
-
+    const initializeCategoryValueChart = () => {
+        const ctx = document.getElementById('categoryValueChart')?.getContext('2d');
+        if (!ctx) return;
+    
+        categoryValueChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Stocks Value',
+                        data: [],
+                        borderColor: '#0d9488',
+                        fill: false,
+                    },
+                    {
+                        label: 'Bonds Value',
+                        data: [],
+                        borderColor: '#f59e0b',
+                        fill: false,
+                    },
+                    {
+                        label: 'Commodities Value',
+                        data: [],
+                        borderColor: '#10b981',
+                        fill: false,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    };
+    
+    // Add this function to fetch and render the new chart's data
+    const fetchAndRenderCategoryValueData = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/api/historical-value-by-category');
+            if (!response.ok) throw new Error('Failed to fetch historical category value');
+            const data = await response.json();
+    
+            const labels = Object.keys(data);
+            const stocksData = labels.map(date => data[date].stocks);
+            const bondsData = labels.map(date => data[date].bonds);
+            const commoditiesData = labels.map(date => data[date].commodities);
+    
+            categoryValueChart.data.labels = labels;
+            categoryValueChart.data.datasets[0].data = stocksData;
+            categoryValueChart.data.datasets[1].data = bondsData;
+            categoryValueChart.data.datasets[2].data = commoditiesData;
+            categoryValueChart.update();
+        } catch (error) {
+            console.error('Error rendering category value chart:', error);
+        }
+    };
     const populateCommoditySelect = () => {
         commodityTypeSelect.innerHTML = ''; 
         for (const [name, symbol] of Object.entries(commodityMap)) {
@@ -653,7 +721,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeCharts();
     initializePerformanceChart();
     initializeComparisonCharts();
+    initializeCategoryValueChart(); // Add this line
     populateCommoditySelect();
     toggleAssetFormFields();
     fetchAndRenderData();
+    fetchAndRenderCategoryValueData();
 });

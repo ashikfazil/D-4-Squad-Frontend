@@ -3,114 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AssetFlow</title>
+    <title>Financial Portfolio Monitor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="app-container">
-        <nav class="sidebar">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
             <div class="sidebar-header">
-                <div class="logo">
-                    <i class="fas fa-wave-square"></i>
-                    <span>AssetFlow</span>
-                </div>
+                <a href="#" class="logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Portfolio</span>
+                </a>
             </div>
-            
             <ul class="nav-menu">
-                <li class="nav-item active" data-view="dashboard">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span>Dashboard</span>
+                <li class="nav-item active" data-view="dashboard" onclick="showView('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
                 </li>
-                <li class="nav-item" data-view="stocks">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Stocks</span>
+                <li class="nav-item" data-view="stocks" onclick="showView('stocks')">
+                    <i class="fas fa-arrow-trend-up"></i><span>Stocks</span>
                 </li>
-                <li class="nav-item" data-view="bonds">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                    <span>Bonds</span>
+                <li class="nav-item" data-view="bonds" onclick="showView('bonds')">
+                    <i class="fas fa-hand-holding-dollar"></i><span>Bonds</span>
                 </li>
-                <li class="nav-item" data-view="commodities">
-                    <i class="fas fa-cubes"></i>
-                    <span>Commodities</span>
+                <li class="nav-item" data-view="commodities" onclick="showView('commodities')">
+                    <i class="fas fa-cubes"></i><span>Commodities</span>
                 </li>
-                <li class="nav-item" data-view="performance">
-                    <i class="fas fa-chart-pie"></i>
-                    <span>Performance</span>
+                <li class="nav-item" data-view="performance" onclick="showView('performance')">
+                     <i class="fas fa-chart-area"></i><span>Performance</span>
                 </li>
-                <li class="nav-item" data-view="comparison">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Comparison</span>
+                <li class="nav-item" data-view="comparison" onclick="showView('comparison')">
+                    <i class="fas fa-scale-balanced"></i><span>Comparison</span>
+               </li>
+                <li class="nav-item" data-view="history" onclick="showView('history')">
+                    <i class="fas fa-history"></i><span>History</span>
                 </li>
-                <li class="nav-item" data-view="history">
-                    <i class="fas fa-history"></i>
-                    <span>History</span>
-                </li>
-                <li class="nav-item" data-view="add-asset">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>Add Asset</span>
+                <li class="nav-item" data-view="add-asset" onclick="showView('add-asset')">
+                    <i class="fas fa-plus-circle"></i><span>Add Asset</span>
                 </li>
             </ul>
-            
             <div class="sidebar-footer">
                 <div class="user-profile">
-                    <div class="avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
+                    <div class="avatar">U</div>
                     <div class="user-info">
-                        <span class="username">Martin Jones</span>
+                        <span class="username">Demo User</span>
                         <span class="user-role">Investor</span>
                     </div>
                 </div>
             </div>
-        </nav>
+        </aside>
 
+        <!-- Main Content -->
         <main class="main-content">
             <header class="header">
-                 <div class="header-left">
+                <div class="header-left">
                     <h1 class="page-title">Dashboard</h1>
                     <p class="page-subtitle">Welcome back! Here's your portfolio overview</p>
                 </div>
                 <div class="header-right">
                     <div class="cash-wallet">
                         <div class="wallet-info">
-                            <span class="wallet-label">Cash Balance</span>
+                            <span class="wallet-label">CASH BALANCE</span>
                             <span class="wallet-amount" id="cash-balance">$0.00</span>
                         </div>
-                        <button class="btn-add-cash" id="addCashBtn" title="Add funds to your wallet">
+                        <button class="btn-add-cash" id="addCashBtn" title="Add Funds">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
                 </div>
             </header>
 
-            <div class="view active" id="dashboard-view">
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="view active">
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-wallet"></i>
-                        </div>
+                        <div class="stat-icon"><i class="fas fa-wallet"></i></div>
                         <div class="stat-content">
                             <h3 id="total-portfolio-value">$0.00</h3>
                             <p>Total Portfolio Value</p>
                         </div>
                     </div>
-                    
                     <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-layer-group"></i>
-                        </div>
+                        <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
                         <div class="stat-content">
                             <h3 id="total-assets-count">0</h3>
                             <p>Total Assets</p>
                         </div>
                     </div>
-
                     <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-arrow-trend-up"></i>
-                        </div>
+                        <div class="stat-icon"><i class="fas fa-arrow-up-right-dots"></i></div>
                         <div class="stat-content">
                             <h3 id="total-gain-loss">$0.00</h3>
                             <p>Total Gain/Loss</p>
@@ -118,93 +101,93 @@
                     </div>
                 </div>
 
+                <!-- This grid wrapper will hold the charts -->
                 <div class="dashboard-grid">
-                    <div class="chart-container">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3>Asset Allocation</h3>
-                            </div>
-                            <div class="card-body">
+                    <div class="card">
+                        <div class="card-header"><h3>Asset Allocation</h3></div>
+                        <div class="card-body">
+                            <div class="chart-container">
                                 <canvas id="allocationChart"></canvas>
                             </div>
                         </div>
                     </div>
+                    <!-- New Chart Card for Category Value -->
+                    <div class="card">
+                        <div class="card-header"><h3>Portfolio Value Over Time</h3></div>
+                        <div class="card-body">
+                            <div class="chart-container" style="height: 450px;">
+                                <canvas id="categoryValueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-             <div class="view" id="performance-view">
+            <!-- Stocks View -->
+            <div id="stocks-view" class="view">
+                <div class="card">
+                    <div class="card-body portfolio-table-container">
+                        <table class="portfolio-table">
+                            <thead><tr><th>Asset</th><th>Shares</th><th>Purchase Price</th><th>Current Price</th><th>Market Value</th><th>Gain/Loss</th><th>Actions</th></tr></thead>
+                            <tbody id="stocks-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bonds View -->
+            <div id="bonds-view" class="view">
+                <div class="card">
+                    <div class="card-body portfolio-table-container">
+                        <table class="portfolio-table">
+                            <thead><tr><th>Asset</th><th>Shares</th><th>Purchase Price</th><th>Current Price</th><th>Market Value</th><th>Gain/Loss</th><th>Actions</th></tr></thead>
+                            <tbody id="bonds-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Commodities View -->
+            <div id="commodities-view" class="view">
+                <div class="card">
+                    <div class="card-body portfolio-table-container">
+                        <table class="portfolio-table">
+                            <thead><tr><th>Asset</th><th>Shares</th><th>Purchase Price</th><th>Current Price</th><th>Market Value</th><th>Gain/Loss</th><th>Actions</th></tr></thead>
+                            <tbody id="commodities-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Performance View -->
+            <div id="performance-view" class="view">
                 <div class="card performance-card">
-                    
                     <div class="card-body">
                         <div class="performance-controls">
                             <div class="form-group">
-                                <label for="stockSymbolInput">Asset Symbol</label>
-                                <input type="text" id="stockSymbolInput" placeholder="Enter Ticker">
+                                <label for="stockSymbolInput">Asset Ticker (e.g., AAPL, GC=F)</label>
+                                <input type="text" id="stockSymbolInput" placeholder="Enter Ticker Symbol">
                             </div>
                             <div class="range-selector">
-                                <button class="btn-secondary range-btn" data-range="7d">1W</button>
-                                <button class="btn-secondary range-btn active" data-range="30d">1M</button>
-                                <button class="btn-secondary range-btn" data-range="365d">1Y</button>
-                                <button class="btn-secondary range-btn" data-range="custom">Custom</button>
-                            </div>
-                            <div id="customDateRange" class="custom-date-range" style="display: none;">
-                                <div class="form-group">
-                                    <label for="startDateInput">Start Date</label>
-                                    <input type="date" id="startDateInput">
-                                </div>
-                                <div class="form-group">
-                                    <label for="endDateInput">End Date</label>
-                                    <input type="date" id="endDateInput">
+                                <button class="range-btn btn-secondary active" data-range="30d">30d</button>
+                                <button class="range-btn btn-secondary" data-range="365d">1yr</button>
+                                <button class="range-btn btn-secondary" data-range="custom">Custom</button>
+                                <div class="custom-date-range" id="customDateRange">
+                                    <div class="form-group"><label for="startDateInput">Start Date</label><input type="date" id="startDateInput"></div>
+                                    <div class="form-group"><label for="endDateInput">End Date</label><input type="date" id="endDateInput"></div>
                                 </div>
                             </div>
                             <button id="getPerformanceBtn" class="btn-primary">Get Performance</button>
                         </div>
-                        <div class="performance-chart-container" style="display: none;">
-                            <canvas id="stockPerformanceChart"></canvas>
-                        </div>
                     </div>
+                </div>
+                <div class="performance-chart-container card">
+                    <canvas id="stockPerformanceChart"></canvas>
                 </div>
             </div>
 
-            <div class="view" id="stocks-view">
-                <div class="portfolio-table-container card">
-                    <div class="card-header">
-                        <h3>Your Stock Holdings</h3>
-                    </div>
-                    <table class="portfolio-table">
-                        <thead><tr><th>Asset</th><th>Shares</th><th>Price</th><th>Current Price</th><th>Market Value</th><th>Gain/Loss</th><th>Actions</th></tr></thead>
-                        <tbody id="stocks-table-body"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="view" id="bonds-view">
-                <div class="portfolio-table-container card">
-                     <div class="card-header">
-                        <h3>Your Bond Holdings</h3>
-                    </div>
-                    <table class="portfolio-table">
-                        <thead><tr><th>Asset</th><th>Shares</th><th>Price</th><th>Current Price</th><th>Market Value</th><th>Gain/Loss</th><th>Actions</th></tr></thead>
-                        <tbody id="bonds-table-body"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="view" id="commodities-view">
-                <div class="portfolio-table-container card">
-                     <div class="card-header">
-                        <h3>Your Commodity Holdings</h3>
-                    </div>
-                    <table class="portfolio-table">
-                        <thead><tr><th>Asset</th><th>Shares</th><th>Price</th><th>Current Price</th><th>Market Value</th><th>Gain/Loss</th><th>Actions</th></tr></thead>
-                        <tbody id="commodities-table-body"></tbody>
-                    </table>
-                </div>
-            </div>
-                        <!-- ======================= Comparison View (Corrected) ======================= -->
+            <!-- Comparison View -->
             <div id="comparison-view" class="view">
-
-                <!-- Comparison Controls with correct classes -->
                 <div class="comparison-controls">
                     <div class="input-group">
                         <label for="comparisonSymbol1">Asset 1 Ticker</label>
@@ -214,140 +197,117 @@
                         <label for="comparisonSymbol2">Asset 2 Ticker</label>
                         <input type="text" id="comparisonSymbol2" placeholder="e.g., GOOGL">
                     </div>
-
-                    <!-- Use the same range-selector class from the performance tab -->
                     <div class="range-selector">
                         <button class="range-btn btn-secondary active" data-range="30d">30d</button>
                         <button class="range-btn btn-secondary" data-range="365d">1yr</button>
                     </div>
-                    
-                    <!-- Use a consistent button class -->
                     <button id="getComparisonBtn" class="btn-primary">Compare</button>
                 </div>
-
-                <!-- Chart Containers -->
                 <div id="comparisonChartContainer" class="comparison-chart-container" style="display: none;">
-                    <div class="chart-wrapper card">
-                        <h3 id="comparisonChart1Title"></h3>
+                    <div class="card chart-wrapper">
+                        <h3 id="comparisonChart1Title">Asset 1</h3>
                         <canvas id="comparisonChart1"></canvas>
                     </div>
-                    <div class="chart-wrapper card">
-                        <h3 id="comparisonChart2Title"></h3>
+                    <div class="card chart-wrapper">
+                        <h3 id="comparisonChart2Title">Asset 2</h3>
                         <canvas id="comparisonChart2"></canvas>
                     </div>
                 </div>
             </div>
-            <div class="view" id="history-view">
+
+            <!-- History View -->
+            <div id="history-view" class="view">
                 <div class="card">
-                  <div class="card-header">
-                    <h3>Transaction History</h3>
-                  </div>
-                  <div class="card-body">
-                    <div class="table-container">
-                      <table class="transaction-table">
-                        <thead>
-                          <tr>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Type</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
-                            <th>Date</th>
-                          </tr>
-                        </thead>
-                        <tbody id="transaction-table-body">
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-            <div class="view" id="add-asset-view">
-                <div class="add-asset-form">
-                    <div class="form-card card">
-                        <form id="addAssetForm">
-                            <fieldset class="form-fieldset">
-                                <legend class="form-legend">1. Select Asset Type</legend>
-                                <div class="form-group">
-                                    <label for="assetCategory">Category</label>
-                                    <select id="assetCategory" required>
-                                        <option value="stocks">Stocks</option>
-                                        <option value="bonds">Bonds</option>
-                                        <option value="commodities">Commodities</option>
-                                    </select>
-                                </div>
-                            </fieldset>
-            
-                            <fieldset class="form-fieldset">
-                                <legend class="form-legend">2. Asset Details</legend>
-                                <div id="stock-bond-fields">
-                                    <div class="form-group">
-                                        <label for="assetName">Asset Name</label>
-                                        <input type="text" id="assetName" placeholder="e.g., Apple Inc." required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="assetSymbol">Asset Symbol</label>
-                                        <input type="text" id="assetSymbol" placeholder="e.g., AAPL, BND" required>
-                                        <div class="form-error" id="assetSymbolError"></div>
-                                    </div>
-                                </div>
-                                <div id="commodity-fields" style="display: none;">
-                                    <div class="form-group">
-                                        <label for="commodityType">Commodity Type</label>
-                                        <select id="commodityType" required></select>
-                                    </div>
-                                </div>
-                            </fieldset>
-            
-                            <fieldset class="form-fieldset">
-                                <legend class="form-legend">3. Purchase Information</legend>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="shares">Quantity / Units</label>
-                                        <input type="number" id="shares" placeholder="1" min="1" step="0.01" required>
-                                        <div class="form-error" id="sharesError"></div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="purchasePrice">Purchase Price (per Unit)</label>
-                                        <input type="number" id="purchasePrice" placeholder="$0.00" min="0" step="0.01" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="purchaseDate">Purchase Date</label>
-                                    <input type="date" id="purchaseDate" required>
-                                    <div class="form-error" id="purchaseDateError"></div>
-                                </div>
-                            </fieldset>
-            
-                            <div class="form-actions">
-                                <button type="button" class="btn-secondary" onclick="showView('dashboard')">Cancel</button>
-                                <button type="submit" class="btn-primary">Add Asset</button>
-                            </div>
-                        </form>
+                    <div class="card-body portfolio-table-container">
+                        <table class="transaction-table">
+                            <thead><tr><th>Name</th><th>Category</th><th>Type</th><th>Price</th><th>Quantity</th><th>Date</th></tr></thead>
+                            <tbody id="transaction-table-body"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
+            
+            <!-- Add Asset View -->
+            <div id="add-asset-view" class="view">
+                 <div class="card form-card add-asset-form">
+                    <form id="addAssetForm">
+                        <fieldset class="form-fieldset">
+                            <legend class="form-legend">Asset Details</legend>
+                            <div class="form-group">
+                                <label for="assetCategory">Asset Category</label>
+                                <select id="assetCategory" name="assetCategory">
+                                    <option value="stocks">Stock</option>
+                                    <option value="bonds">Bond</option>
+                                    <option value="commodities">Commodity</option>
+                                </select>
+                            </div>
+                            <div id="stock-bond-fields">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="assetName">Asset Name</label>
+                                        <input type="text" id="assetName" name="assetName" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="assetSymbol">Ticker Symbol</label>
+                                        <input type="text" id="assetSymbol" name="assetSymbol" required>
+                                        <div id="assetSymbolError" class="form-error"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="commodity-fields" style="display: none;">
+                                <div class="form-group">
+                                    <label for="commodityType">Commodity Type</label>
+                                    <select id="commodityType" name="commodityType"></select>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="form-fieldset">
+                            <legend class="form-legend">Transaction Details</legend>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="shares">Quantity / Shares</label>
+                                    <input type="number" id="shares" name="shares" step="any" required>
+                                    <div id="sharesError" class="form-error"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="purchasePrice">Purchase Price per Unit</label>
+                                    <input type="number" id="purchasePrice" name="purchasePrice" step="any" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="purchaseDate">Purchase Date</label>
+                                <input type="date" id="purchaseDate" name="purchaseDate" required>
+                                <div id="purchaseDateError" class="form-error"></div>
+                            </div>
+                        </fieldset>
+                        <div class="form-actions">
+                            <button type="reset" class="btn-secondary">Cancel</button>
+                            <button type="submit" class="btn-primary">Add Asset</button>
+                        </div>
+                    </form>
+                 </div>
+            </div>
+
         </main>
     </div>
-    
-    <!-- New Add Cash Modal -->
-    <div id="addCashModal" class="modal-overlay" style="display: none;">
+
+    <!-- Add Cash Modal -->
+    <div id="addCashModal" class="modal-overlay">
         <div class="modal-content card">
+            <div class="modal-header">
+                <h3>Add Funds to Wallet</h3>
+                <button id="closeAddCashModal" class="close-modal">&times;</button>
+            </div>
             <form id="addCashForm">
-                <div class="modal-header">
-                    <h2>Add Funds to Wallet</h2>
-                    <button type="button" class="close-modal" id="closeAddCashModal">×</button>
-                </div>
                 <div class="modal-body">
-                    <p>Enter the amount you would like to add to your cash balance.</p>
-                    <div class="form-group" style="margin-top: 1rem;">
-                        <label for="addCashAmount">Amount</label>
-                        <input type="number" id="addCashAmount" min="1" step="0.01" placeholder="e.g., 500.00" required>
+                    <div class="form-group">
+                        <label for="addCashAmount">Amount (USD)</label>
+                        <input type="number" id="addCashAmount" step="0.01" min="0.01" required>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-secondary" id="cancelAddCash">Cancel</button>
+                    <button type="button" id="cancelAddCash" class="btn-secondary">Cancel</button>
                     <button type="submit" class="btn-primary">Add Funds</button>
                 </div>
             </form>
@@ -355,12 +315,9 @@
     </div>
 
 
-    <!-- Chart.js and necessary adapters -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    
-    <!-- Your application script -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="script.js"></script>
 </body>
 </html>
