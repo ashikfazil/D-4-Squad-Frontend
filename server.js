@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import yahooFinance from 'yahoo-finance2';
-// MODIFIED: Removed 'updateAsset' from the import list
 import { addAsset, deleteAsset, getAllAssets, getAllTransactions, getCashBalance, updateCashBalance } from './dataLayer.js';
 
 dotenv.config();
@@ -10,7 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// --- NEW: WALLET API ENDPOINTS ---
+// --- WALLET API ENDPOINTS (No changes here) ---
 app.get('/api/wallet', async (req, res) => {
     try {
         const balance = await getCashBalance();
@@ -27,7 +26,7 @@ app.post('/api/wallet/add', async (req, res) => {
     }
     try {
         const currentBalance = await getCashBalance();
-        const newBalance = parseFloat(currentBalance) + amount; // Ensure numeric addition
+        const newBalance = parseFloat(currentBalance) + amount;
         await updateCashBalance(newBalance);
         res.status(200).json({ message: 'Funds added successfully', newBalance });
     } catch (error) {
@@ -35,7 +34,7 @@ app.post('/api/wallet/add', async (req, res) => {
     }
 });
 
-// --- CENTRALIZED PRICE FETCHING ---
+// --- PRICE & VALIDATION (No changes here) ---
 app.get('/api/current-price/:symbol', async (req, res) => {
     const { symbol } = req.params;
     try {
@@ -51,7 +50,6 @@ app.get('/api/current-price/:symbol', async (req, res) => {
     }
 });
 
-// --- VALIDATION AND HISTORICAL DATA ---
 app.get('/api/validate-ticker/:symbol', async (req, res) => {
     const { symbol } = req.params;
     try {
@@ -104,20 +102,21 @@ app.get('/api/assets', async (req, res) => {
     }
 });
 
+// MODIFIED: This endpoint now calls the refactored addAsset function
 app.post('/api/add-asset', async (req, res) => {
+    // These variable names now match the parameters for addAsset
     const { assetName, assetSymbol, shares, purchasePrice, purchaseDate, category } = req.body;
     try {
-        const newAssetId = await addAsset(assetName, assetSymbol, purchasePrice, shares, category, purchaseDate);
-        res.status(201).json({ message: 'Asset added successfully', assetId: newAssetId });
+        // Pass the correct variables to the function
+        const result = await addAsset(assetName, assetSymbol, purchasePrice, shares, category, purchaseDate);
+        res.status(201).json(result);
     } catch (error) {
         if (error.message.includes('Insufficient funds')) {
             return res.status(400).json({ error: error.message });
         }
-        res.status(500).json({ error: 'Failed to add asset' });
+        res.status(500).json({ error: 'Failed to process asset purchase.' });
     }
 });
-
-// REMOVED: The entire app.put('/api/update-asset/:id', ...) endpoint is gone.
 
 app.delete('/api/delete-asset/:id', async (req, res) => {
     const assetId = req.params.id;
