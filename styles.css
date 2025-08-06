@@ -144,7 +144,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.5rem;
 }
 .header-left .page-subtitle {
     color: var(--text-secondary);
@@ -235,7 +235,7 @@ body {
 
 .chart-container {
     position: relative;
-    height: 450px;
+    height: 320px;
     width: 100%;
 }
 
