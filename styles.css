@@ -80,6 +80,7 @@ body {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--primary-dark);
+    text-decoration: none;
 }
 .logo i { font-size: 2rem; }
 
