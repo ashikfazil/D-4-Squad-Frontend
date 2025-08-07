@@ -122,7 +122,7 @@ export async function getAllAssets() {
     }
 }
 
-async function addTransaction(name, category, type, price, date, quantity, conn) {
+async function addTransaction(conn, name, category, price, date, quantity, type) {
     try {
         const query = `
             INSERT INTO transactions (name, category, transaction_type, price, date, quantity)   
@@ -137,55 +137,68 @@ async function addTransaction(name, category, type, price, date, quantity, conn)
     }
 }
 
-export async function addAsset(name, shortForm, price, volume, category, createdAt) {
+export async function addAsset(name, shortForm, purchasePrice, purchaseVolume, category, purchaseDate) {
     const conn = await mysql.createConnection(dbConfig);
     try {
         await conn.beginTransaction();
-        const totalCost = price * volume;
 
-        // Fetch the balance AND the user's email for the potential alert
+        const newTransactionCost = purchasePrice * purchaseVolume;
         const [walletRows] = await conn.execute('SELECT balance, user_email, id FROM wallet ORDER BY id LIMIT 1 FOR UPDATE');
+        const currentBalance = parseFloat(walletRows[0].balance);
 
-        if (walletRows.length === 0 || parseFloat(walletRows[0].balance) < totalCost) {
+        if (walletRows.length === 0 || currentBalance < newTransactionCost) {
             await conn.rollback();
             throw new Error('Insufficient funds to complete purchase.');
         }
         
-        const newBalance = parseFloat(walletRows[0].balance) - totalCost;
-        await conn.execute('UPDATE wallet SET balance = ? WHERE id = ?', [newBalance, walletRows[0].id]);
+        const newWalletBalance = currentBalance - newTransactionCost;
+        await conn.execute('UPDATE wallet SET balance = ? WHERE id = ?', [newWalletBalance, walletRows[0].id]);
 
-        const assetQuery = `INSERT INTO assets (Name, shortForm, price, volume, category, createdAt) VALUES (?, ?, ?, ?, ?, ?)`;
-        const [assetResult] = await conn.execute(assetQuery, [name, shortForm, price, volume, category, createdAt]);
-        const assetId = assetResult.insertId;
+        const [existingAssets] = await conn.execute('SELECT * FROM assets WHERE shortForm = ? FOR UPDATE', [shortForm]);
 
-        const transactionId = await addTransaction(name, category, 'buy', price, createdAt, volume, conn);
+        if (existingAssets.length > 0) {
+            const existingAsset = existingAssets[0];
+            const oldVolume = parseFloat(existingAsset.volume);
+            const oldTotalCost = parseFloat(existingAsset.price);
+            
+            const newTotalVolume = oldVolume + purchaseVolume;
+            const newTotalCost = oldTotalCost + newTransactionCost;
+
+            const updateQuery = `UPDATE assets SET volume = ?, price = ?, createdAt = ? WHERE Asset_id = ?`;
+            await conn.execute(updateQuery, [newTotalVolume, newTotalCost, purchaseDate, existingAsset.Asset_id]);
+            console.log(`Asset ${shortForm} updated successfully.`);
+        } else {
+            const insertQuery = `INSERT INTO assets (Name, shortForm, price, volume, category, createdAt) VALUES (?, ?, ?, ?, ?, ?)`;
+            await conn.execute(insertQuery, [name, shortForm, newTransactionCost, purchaseVolume, category, purchaseDate]);
+            console.log(`Asset ${shortForm} added successfully.`);
+        }
+
+        await addTransaction(conn, name, category, purchasePrice, purchaseDate, purchaseVolume, 'buy');
         
         await conn.commit();
-        console.log('Asset purchased and wallet updated successfully.');
+        console.log('Asset purchase processed successfully.');
 
-        // === NEW LOGIC BLOCK: CHECK BALANCE AND SEND ALERT IF NEEDED ===
-        const lowBalanceThreshold = 500;
+        const lowBalanceThreshold = 50;
         const userEmail = walletRows[0].user_email;
 
-        if (newBalance < lowBalanceThreshold && userEmail) {
-            console.log(`New balance of ${newBalance} is below threshold of ${lowBalanceThreshold}. Triggering alert.`);
-            // We send the alert *after* the transaction is committed.
-            // We use a .catch here so a failed email doesn't crash the user's experience.
-            sendLowBalanceWarningEmail(userEmail, newBalance, lowBalanceThreshold)
+        if (newWalletBalance < lowBalanceThreshold && userEmail) {
+            console.log(`New balance of ${newWalletBalance} is below threshold of ${lowBalanceThreshold}. Triggering alert.`);
+            sendLowBalanceWarningEmail(userEmail, newWalletBalance, lowBalanceThreshold)
                 .catch(err => console.error("Alert email failed to send, but purchase was successful:", err));
         }
-        // === END OF NEW LOGIC BLOCK ===
 
-        return { assetId, transactionId };
+        return { message: 'Asset purchase processed successfully.' };
     } catch (error) {
         await conn.rollback();
-        console.error('Error during asset and transaction handling:', error);
+        console.error('Error during asset purchase process:', error);
         throw error;
     } finally {
         await conn.end();
     }
 }
-export async function deleteAsset(assetId, volumeSold) {
+
+// FIXED: Corrected the function to accept sellPrice and use it for calculations.
+export async function deleteAsset(assetId, volumeSold, sellPrice) {
     const conn = await mysql.createConnection(dbConfig);
     try {
         await conn.beginTransaction();
@@ -195,31 +208,35 @@ export async function deleteAsset(assetId, volumeSold) {
             return { status: 'not_found' };
         }
 
-        const asset = { ...assetRows[0], symbol: assetRows[0].shortForm, shares: assetRows[0].volume };
+        const asset = { ...assetRows[0], symbol: assetRows[0].shortForm, shares: parseFloat(assetRows[0].volume), price: parseFloat(assetRows[0].price) };
+
         if (asset.shares < volumeSold) {
             await conn.rollback();
             return { status: 'insufficient_volume', currentVolume: asset.shares };
         }
-
-        const quote = await yahooFinance.quote(asset.symbol);
-        const currentSellPrice = quote.regularMarketPrice;
-        const totalSaleValue = currentSellPrice * volumeSold;
+        
+        // Use the user-provided sellPrice for the calculation
+        const totalSaleValue = sellPrice * volumeSold;
         
         const [walletRows] = await conn.execute('SELECT balance, id FROM wallet ORDER BY id LIMIT 1 FOR UPDATE');
         const newBalance = parseFloat(walletRows[0].balance) + totalSaleValue;
         await conn.execute('UPDATE wallet SET balance = ? WHERE id = ?', [newBalance, walletRows[0].id]);
 
+        const averageCostPerShare = asset.price / asset.shares;
         const newVolume = asset.shares - volumeSold;
-        if (newVolume === 0) {
+        const newTotalCost = asset.price - (averageCostPerShare * volumeSold);
+
+        if (newVolume < 0.0001) { // Use a small threshold to handle floating point inaccuracies
             await conn.execute('DELETE FROM assets WHERE Asset_id = ?', [assetId]);
         } else {
-            await conn.execute('UPDATE assets SET volume = ? WHERE Asset_id = ?', [newVolume, assetId]);
+            await conn.execute('UPDATE assets SET volume = ?, price = ? WHERE Asset_id = ?', [newVolume, newTotalCost, assetId]);
         }
         
-        await addTransaction(asset.Name, asset.category, 'sell', currentSellPrice, new Date(), volumeSold, conn);
+        // Log the transaction with the user's sell price
+        await addTransaction(conn, asset.Name, asset.category, sellPrice, new Date(), volumeSold, 'sell');
         
         await conn.commit();
-        return { status: newVolume === 0 ? 'deleted' : 'updated', id: assetId };
+        return { status: newVolume < 0.0001 ? 'deleted' : 'updated', id: assetId };
     } catch (error) {
         await conn.rollback();
         console.error('Error processing asset sell:', error);
@@ -228,6 +245,7 @@ export async function deleteAsset(assetId, volumeSold) {
         await conn.end();
     }
 }
+
 
 export async function getAllTransactions() {
     const conn = await mysql.createConnection(dbConfig);

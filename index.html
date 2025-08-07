@@ -35,9 +35,9 @@
                     <i class="fas fa-cubes"></i>
                     <span>Commodities</span>
                 </li>
-                <li class="nav-item" data-view="performance">
-                    <i class="fas fa-chart-pie"></i>
-                    <span>Performance</span>
+                <li class="nav-item" data-view="comparison">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Comparison</span>
                 </li>
                 <li class="nav-item" data-view="history">
                     <i class="fas fa-history"></i>
@@ -109,30 +109,28 @@
                     </div>
                 </div>
                 <div class="dashboard-grid">
-                    <div class="chart-container">
-                        <div class="card">
-                            <div class="card-header"><h3>Asset Allocation</h3></div>
-                            <div class="card-body"><canvas id="allocationChart"></canvas></div>
+                    <div class="card">
+                        <div class="card-header"><h3>Asset Allocation</h3></div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="allocationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h3>Portfolio Value Over Time</h3></div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="categoryValueChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="view" id="performance-view">
-                 <div class="card" id="asset-performance-summary-card">
-                    <div class="card-header"><h3>Asset Performance Summary (Gain/Loss %)</h3></div>
-                    <div class="card-body">
-                        <div id="asset-performance-graph-wrapper">
-                             <canvas id="assetPerformanceChart"></canvas>
-                        </div>
-                        <p id="no-asset-performance-message" style="display: none; text-align: center; padding: 2rem 0;">
-                            No assets in portfolio to display.
-                        </p>
-                    </div>
-                </div>
-
+            <div class="view" id="comparison-view">
                 <div class="card performance-card">
-                    <div class="card-header"><h3>Compare Asset Performance</h3></div>
+                    <div class="card-header"><h3>Asset Comparison</h3></div>
                     <div class="card-body">
                         <div class="performance-controls">
                              <div class="form-group">
@@ -211,8 +209,8 @@
                             <fieldset class="form-fieldset">
                                 <legend class="form-legend">2. Asset Details</legend>
                                 <div id="stock-bond-fields">
-                                    <div class="form-group"><label for="assetName">Asset Name</label><input type="text" id="assetName" placeholder="e.g., Apple Inc." required></div>
                                     <div class="form-group"><label for="assetSymbol">Asset Symbol</label><input type="text" id="assetSymbol" placeholder="e.g., AAPL, BND" required><div class="form-error" id="assetSymbolError"></div></div>
+                                    <div class="form-group"><label for="assetName">Asset Name</label><input type="text" id="assetName" placeholder="e.g., Apple Inc." required></div>
                                 </div>
                                 <div id="commodity-fields" style="display: none;"><div class="form-group"><label for="commodityType">Commodity Type</label><select id="commodityType" required></select></div></div>
                             </fieldset>
@@ -244,6 +242,31 @@
             </form>
         </div>
     </div>
+
+    <div id="sellAssetModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content card">
+            <form id="sellAssetForm">
+                <div class="modal-header"><h2>Sell Asset</h2><button type="button" class="close-modal" id="closeSellModal">×</button></div>
+                <div class="modal-body">
+                    <input type="hidden" id="sellAssetId">
+                    <p>Selling: <strong id="sellAssetSymbol"></strong></p>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label for="sellQuantity">Quantity to Sell</label>
+                        <input type="number" id="sellQuantity" step="0.01" min="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sellPrice">Price per Unit ($)</label>
+                        <input type="number" id="sellPrice" step="0.01" min="0.01" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="cancelSellModal">Cancel</button>
+                    <button type="submit" class="btn-primary">Confirm Sale</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/cdn.min.js"></script>

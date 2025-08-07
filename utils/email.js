@@ -106,16 +106,16 @@ export async function sendLowBalanceWarningEmail(userEmail, currentBalance, thre
             name: 'AssetFlow Alerts',
             email: 'poojithachalla.2004@gmail.com',
         },
-        subject: `Low Balance Warning for Your AssetFlow Account`,
+        subject: `Low Balance Alert for Your AssetFlow Account`,
         html: `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #e5e7eb; border-radius: 8px;">
                 <div style="background-color: #f59e0b; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-                    <h2 style="margin: 0;">Low Balance Warning</h2>
+                    <h2 style="margin: 0;">Low Balance Alert</h2>
                 </div>
                 <div style="padding: 25px;">
                     <h3 style="color: #1f2937;">Your Settlement Account Needs Attention</h3>
                     <p>This is an automated notification to let you know that your cash balance is running low.</p>
-                    <p>Your current balance is <strong>${formatCurrency(currentBalance)}</strong>, which is below the recommended threshold of ${formatCurrency(threshold)}.</p>
+                    <p>Your current balance is <strong>${formatCurrency(currentBalance)}</strong>, which is below the recommended threshold of $50.</p>
                     <p>To ensure you can make future investments without interruption, you may want to add more funds to your account.</p>
                     <br>
                     <div style="text-align: center;">
@@ -133,7 +133,7 @@ export async function sendLowBalanceWarningEmail(userEmail, currentBalance, thre
         let info = await transporter.sendMail(message);
         console.log(`Low balance warning sent successfully to ${userEmail}`);
     } catch (error) {
-        console.error('!!! FAILED TO SEND LOW BALANCE WARNING !!!');
+        console.error('!!! FAILED TO SEND LOW BALANCE Alert !!!');
         if (error.response) console.error('Error Body:', error.response.body);
     }
 }
