@@ -374,7 +374,7 @@ body {
 }
 
 .performance-card {
-    margin-bottom: 2rem;
+    margin-top: 2rem;
 }
 
 .performance-controls {
@@ -413,6 +413,64 @@ body {
     flex: 1;
     min-width: 150px;
 }
+
+.comparison-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+#asset-performance-summary-card {
+    margin-bottom: 2rem;
+}
+
+.performance-summary-list {
+    list-style: none;
+    padding: 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.performance-summary-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.performance-summary-list li:last-child {
+    border-bottom: none;
+}
+
+.performance-summary-list .asset-info {
+    font-weight: 600;
+}
+.performance-summary-list .asset-info small {
+    display: block;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.performance-summary-list .percentage {
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    min-width: 80px;
+    text-align: right;
+}
+
+.performance-summary-list .percentage.positive {
+    color: var(--success-color);
+    background-color: #f0fdf4;
+}
+
+.performance-summary-list .percentage.negative {
+    color: var(--danger-color);
+    background-color: #fef2f2;
+}
+
 
 #getPerformanceBtn {
     align-self: flex-start;
@@ -520,6 +578,7 @@ body {
 
 @media screen and (max-width: 1200px) {
     .stats-grid { grid-template-columns: 1fr; }
+    .comparison-inputs { grid-template-columns: 1fr; }
 }
 
 @media screen and (max-width: 992px) {
