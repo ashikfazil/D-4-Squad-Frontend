@@ -125,7 +125,7 @@ export async function getAllAssets() {
 async function addTransaction(conn, name, category, price, date, quantity, type) {
     try {
         const query = `
-            INSERT INTO transactions (name, category, transaction_type, price, date, quantity)   
+            INSERT INTO transaction (name, category, transaction_type, price, date, quantity)   
             VALUES (?, ?, ?, ?, ?, ?)
         `;
         const [result] = await conn.execute(query, [name, category, type, price, date, quantity]);
@@ -250,7 +250,7 @@ export async function deleteAsset(assetId, volumeSold, sellPrice) {
 export async function getAllTransactions() {
     const conn = await mysql.createConnection(dbConfig);
     try {
-        const [rows] = await conn.execute(`SELECT * FROM transactions ORDER BY date DESC`);
+        const [rows] = await conn.execute(`SELECT * FROM transaction ORDER BY date DESC`);
         return rows;
     } catch (err) {
         console.error("Error fetching transactions:", err);

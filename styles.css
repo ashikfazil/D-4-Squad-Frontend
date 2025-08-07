@@ -143,7 +143,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.25rem;
 }
 .header-left .page-subtitle {
     color: var(--text-secondary);
@@ -228,14 +228,14 @@ body {
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
-}
+    }
 
 .chart-container {
     max-width: 450px;
     margin: auto;
-    height: 450px;
+    height: 330px;
     position: relative;
 }
 

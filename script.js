@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td data-label="Asset"><strong>${asset.symbol}</strong><br><small>${asset.name}</small></td>
                 <td data-label="Shares">${asset.shares.toFixed(2)}</td>
                 <td data-label="Price">$${averagePurchasePrice.toFixed(2)}</td>
-                <td data-label="Current Price"><strong>$${livePrice.toFixed(2)}</strong></td>
+                <td data-label="Current Price">$${livePrice.toFixed(2)}</td>
                 <td data-label="Market Value">$${marketValue.toFixed(2)}</td>
                 <td data-label="Gain/Loss">${gainLossHTML}</td>
                 <td data-label="Actions"><button title="Delete" class="delete-btn" data-asset-id="${asset.id}"><i class="fas fa-trash"></i></button></td>
@@ -326,11 +326,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const transactions = await response.json();
             tbody.innerHTML = transactions.length === 0 ? `<tr><td colspan="6" style="text-align:center;padding:1rem;">No transactions found.</td></tr>` : '';
             if(transactions.length === 0) return;
+            const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
             transactions.forEach(tx => {
                 tbody.innerHTML += `<tr>
-                    <td data-label="Name">${tx.name}</td>
-                    <td data-label="Category">${tx.category.toLowerCase()}</td>
-                    <td data-label="Type" class="${tx.transaction_type === 'buy' ? 'transaction-type-buy' : 'transaction-type-sell'}">${tx.transaction_type.toLowerCase()}</td>
+                    <td data-label="Name">${capitalize(tx.name)}</td>
+                    <td data-label="Category">${capitalize(tx.category)}</td>
+                    <td data-label="Type" class="${tx.transaction_type === 'buy' ? 'transaction-type-buy' : 'transaction-type-sell'}">${capitalize(tx.transaction_type)}</td>
                     <td data-label="Price">$${parseFloat(tx.price).toFixed(2)}</td>
                     <td data-label="Quantity">${tx.quantity}</td>
                     <td data-label="Date">${new Date(tx.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
